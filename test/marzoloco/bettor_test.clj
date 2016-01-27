@@ -4,11 +4,11 @@
 
 (deftest apply-funds-deposited-event
   (let [bettor-id "betty"
-        starting-bankroll 0.0M
+        initial-bankroll 0.0M
         deposited-amount 200.0M
-        expected-bankroll (+ starting-bankroll deposited-amount)
+        expected-bankroll (+ initial-bankroll deposited-amount)
         initial-bettor (map->Bettor {:bettor-id bettor-id
-                                     :bankroll  starting-bankroll})
+                                     :bankroll  initial-bankroll})
         funds-deposited-event {:event-type :funds-deposited
                                :bettor-id  bettor-id
                                :amount     deposited-amount}
@@ -19,11 +19,11 @@
 
 (deftest apply-bet-taken-event
   (let [bettor-id "betty"
-        starting-bankroll 200.0M
+        initial-bankroll 200.0M
         bet-amount 50.0M
-        expected-bankroll (- starting-bankroll bet-amount)
+        expected-bankroll (- initial-bankroll bet-amount)
         initial-bettor (map->Bettor {:bettor-id bettor-id
-                                     :bankroll  starting-bankroll})
+                                     :bankroll  initial-bankroll})
         bet-taken-event {:event-type :bet-taken
                          :bettor-id  bettor-id
                          :amount     bet-amount}
