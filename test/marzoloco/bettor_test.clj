@@ -1,6 +1,6 @@
-(ns marzoloco.core-test
+(ns marzoloco.bettor-test
   (:require [clojure.test :refer :all]
-            [marzoloco.core :refer :all]))
+            [marzoloco.aggregates.bettor :refer :all]))
 
 (deftest a-test
   (testing "FIXME, I fail."
