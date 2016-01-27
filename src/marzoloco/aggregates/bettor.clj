@@ -5,6 +5,13 @@
    bankroll
    winnings])
 
-(defn apply-event
+(defmulti apply-event (fn [^Bettor bettor event]
+                        (:event-type event)))
+
+(defmethod apply-event :funds-deposited
   [^Bettor bettor event]
   (update-in bettor [:bankroll] + (:amount event)))
+
+(defmethod apply-event :bet-taken
+  [^Bettor bettor event]
+  (update-in bettor [:bankroll] - (:amount event)))
