@@ -2,6 +2,16 @@
   (:require [clojure.test :refer :all]
             [marzoloco.aggregates.bettor :refer :all]))
 
-(deftest a-test
-  (testing "FIXME, I fail."
-    (is (= (seventy-one) 71))))
+(deftest apply-bettor-funds-deposited-event
+  (let [bettor-id "betty"
+        starting-bankroll 0.0M
+        deposited-amount 200.0M
+        initial-agg {:bettor-id bettor-id
+                     :bankroll  starting-bankroll}
+        bfd-event {:event-type :bettor-funds-deposited
+                   :bettor-id  bettor-id
+                   :amount     deposited-amount}
+        expected-agg {:bettor-id bettor-id
+                      :bankroll  (+ starting-bankroll deposited-amount)}
+        actual-agg (apply-event initial-agg bfd-event)]
+    (is (= expected-agg actual-agg))))
