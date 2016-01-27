@@ -32,3 +32,18 @@
         actual-bettor (apply-event initial-bettor bet-taken-event)]
     (is (= expected-bettor actual-bettor))))
 
+(deftest apply-winnings-earned-event
+  (let [bettor-id "betty"
+        initial-winnings 100.0M
+        earned-amount 50.0M
+        expected-winnings (+ initial-winnings earned-amount)
+        initial-bettor (map->Bettor {:bettor-id bettor-id
+                                     :winnings  initial-winnings})
+        winnings-earned-event {:event-type :winnings-earned
+                               :bettor-id  bettor-id
+                               :amount     earned-amount}
+        expected-bettor (map->Bettor {:bettor-id bettor-id
+                                      :winnings  expected-winnings})
+        actual-bettor (apply-event initial-bettor winnings-earned-event)]
+    (is (= expected-bettor actual-bettor))))
+

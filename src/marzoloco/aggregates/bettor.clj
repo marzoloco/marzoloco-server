@@ -15,3 +15,7 @@
 (defmethod apply-event :bet-taken
   [^Bettor bettor event]
   (update-in bettor [:bankroll] - (:amount event)))
+
+(defmethod apply-event :winnings-earned
+  [^Bettor bettor event]
+  (update-in bettor [:winnings] + (:amount event)))
