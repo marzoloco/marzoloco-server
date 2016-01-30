@@ -1,11 +1,12 @@
-(ns marzoloco.aggregates.bettor)
+(ns marzoloco.aggregates.bettor
+  (:require [schema.core :as s]))
 
-(defrecord Bettor
-  [bettor-id
-   bankroll
-   winnings])
+(s/defrecord Bettor
+  [bettor-id :- s/Str
+   bankroll :- BigDecimal
+   winnings :- BigDecimal])
 
-(defmulti apply-event (fn [^Bettor bettor event]
+(defmulti apply-event (fn [_ event]
                         (:event-type event)))
 
 (defmethod apply-event :funds-deposited
