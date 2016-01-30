@@ -1,17 +1,19 @@
 (ns marzoloco.betting.bettor
-  (:require [schema.core :as s]))
+  (:require [schema.core :as s]
+            [marzoloco.betting.events :refer :all])
+  (:import (marzoloco.betting.events FundsDeposited)))
 
-(s/defrecord Bettor
-  [bettor-id :- s/Str
-   bankroll :- BigDecimal
-   winnings :- BigDecimal])
+(defrecord Bettor [bettor-id
+                   bankroll
+                   winnings])
 
 (defmulti apply-event (fn [_ event]
                         (:event-type event)))
 
-(defmethod apply-event :funds-deposited
-  [^Bettor bettor event]
-  (update-in bettor [:bankroll] + (:amount event)))
+(s/defmethod apply-event :funds-deposited
+             [bettor :- Bettor
+              event :- FundsDeposited]
+             (update-in bettor [:bankroll] + (:amount event)))
 
 (defmethod apply-event :bet-taken
   [^Bettor bettor event]

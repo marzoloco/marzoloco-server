@@ -1,6 +1,10 @@
 (ns marzoloco.betting.bettor-test
   (:require [clojure.test :refer :all]
-            [marzoloco.betting.bettor :refer :all]))
+            [marzoloco.betting.bettor :refer :all]
+            [marzoloco.betting.events :as e]
+            [schema.test]))
+
+(use-fixtures :once schema.test/validate-schemas)
 
 (deftest apply-funds-deposited-event
   (let [bettor-id "betty"
@@ -8,14 +12,12 @@
         deposited-amount 200.0M
         expected-bankroll (+ initial-bankroll deposited-amount)
         initial-bettor (map->Bettor {:bettor-id bettor-id
-                                     :bankroll  initial-bankroll
-                                     :winnings  0})
-        funds-deposited-event {:event-type :funds-deposited
-                               :bettor-id  bettor-id
-                               :amount     deposited-amount}
+                                     :bankroll  initial-bankroll})
+        funds-deposited-event (e/map->FundsDeposited {:event-type :funds-deposited
+                                                      :bettor-id  bettor-id
+                                                      :amount     deposited-amount})
         expected-bettor (map->Bettor {:bettor-id bettor-id
-                                      :bankroll  expected-bankroll
-                                      :winnings  0})
+                                      :bankroll  expected-bankroll})
         actual-bettor (apply-event initial-bettor funds-deposited-event)]
     (is (= expected-bettor actual-bettor))))
 
@@ -25,14 +27,12 @@
         bet-amount 50.0M
         expected-bankroll (- initial-bankroll bet-amount)
         initial-bettor (map->Bettor {:bettor-id bettor-id
-                                     :bankroll  initial-bankroll
-                                     :winnings  0})
+                                     :bankroll  initial-bankroll})
         bet-taken-event {:event-type :bet-taken
                          :bettor-id  bettor-id
                          :amount     bet-amount}
         expected-bettor (map->Bettor {:bettor-id bettor-id
-                                      :bankroll  expected-bankroll
-                                      :winnings  0})
+                                      :bankroll  expected-bankroll})
         actual-bettor (apply-event initial-bettor bet-taken-event)]
     (is (= expected-bettor actual-bettor))))
 
@@ -42,13 +42,11 @@
         earned-amount 50.0M
         expected-winnings (+ initial-winnings earned-amount)
         initial-bettor (map->Bettor {:bettor-id bettor-id
-                                     :bankroll  0
                                      :winnings  initial-winnings})
         winnings-earned-event {:event-type :winnings-earned
                                :bettor-id  bettor-id
                                :amount     earned-amount}
         expected-bettor (map->Bettor {:bettor-id bettor-id
-                                      :bankroll  0
                                       :winnings  expected-winnings})
         actual-bettor (apply-event initial-bettor winnings-earned-event)]
     (is (= expected-bettor actual-bettor))))
