@@ -1,4 +1,4 @@
-(ns marzoloco.aggregates.bettor
+(ns marzoloco.betting.bettor
   (:require [schema.core :as s]))
 
 (s/defrecord Bettor

@@ -1,6 +1,6 @@
-(ns marzoloco.bettor-test
+(ns marzoloco.betting.bettor-test
   (:require [clojure.test :refer :all]
-            [marzoloco.aggregates.bettor :refer :all]))
+            [marzoloco.betting.bettor :refer :all]))
 
 (deftest apply-funds-deposited-event
   (let [bettor-id "betty"
