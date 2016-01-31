@@ -1,6 +1,6 @@
 (ns marzoloco.betting.bettor
   (:require [schema.core :as s]
-            [marzoloco.betting.events :refer :all])
+            [marzoloco.betting.events :as e])
   (:import (marzoloco.betting.events FundsDeposited BetTaken WinningsEarned)))
 
 (defrecord Bettor [bettor-id
