@@ -13,8 +13,8 @@
         expected-bankroll (+ initial-bankroll deposited-amount)
         initial-bettor (map->Bettor {:bettor-id bettor-id
                                      :bankroll  initial-bankroll})
-        funds-deposited-event (e/map->FundsDeposited {:bettor-id  bettor-id
-                                                      :amount     deposited-amount})
+        funds-deposited-event (e/map->FundsDeposited {:bettor-id bettor-id
+                                                      :amount    deposited-amount})
         expected-bettor (map->Bettor {:bettor-id bettor-id
                                       :bankroll  expected-bankroll})
         actual-bettor (apply-event initial-bettor funds-deposited-event)]
@@ -27,8 +27,8 @@
         expected-bankroll (- initial-bankroll bet-amount)
         initial-bettor (map->Bettor {:bettor-id bettor-id
                                      :bankroll  initial-bankroll})
-        bet-taken-event (e/map->BetTaken {:bettor-id  bettor-id
-                                          :amount     bet-amount})
+        bet-taken-event (e/map->BetTaken {:bettor-id bettor-id
+                                          :amount    bet-amount})
         expected-bettor (map->Bettor {:bettor-id bettor-id
                                       :bankroll  expected-bankroll})
         actual-bettor (apply-event initial-bettor bet-taken-event)]
@@ -41,8 +41,8 @@
         expected-winnings (+ initial-winnings earned-amount)
         initial-bettor (map->Bettor {:bettor-id bettor-id
                                      :winnings  initial-winnings})
-        winnings-earned-event (e/map->WinningsEarned {:bettor-id  bettor-id
-                                                      :amount     earned-amount})
+        winnings-earned-event (e/map->WinningsEarned {:bettor-id bettor-id
+                                                      :amount    earned-amount})
         expected-bettor (map->Bettor {:bettor-id bettor-id
                                       :winnings  expected-winnings})
         actual-bettor (apply-event initial-bettor winnings-earned-event)]
