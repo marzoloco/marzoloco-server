@@ -9,7 +9,7 @@
 (defn uuid [] (java.util.UUID/randomUUID))
 
 (deftest apply-points-deposited-event
-  (let [player-id "betty"
+  (let [player-id (uuid)
         initial-bankroll 0.0M
         deposited-amount 200.0M
         expected-bankroll (+ initial-bankroll deposited-amount)
@@ -23,7 +23,7 @@
     (is (= expected-player actual-player))))
 
 (deftest apply-wager-placed-event
-  (let [player-id "betty"
+  (let [player-id (uuid)
         initial-bankroll 200.0M
         wager-id (uuid)
         wager-amount 50.0M
@@ -41,7 +41,7 @@
     (is (= expected-player actual-player))))
 
 (deftest apply-winnings-earned-event
-  (let [player-id "betty"
+  (let [player-id (uuid)
         initial-winnings 100.0M
         earned-amount 50.0M
         expected-winnings (+ initial-winnings earned-amount)
