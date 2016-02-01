@@ -5,6 +5,7 @@
                               amount :- BigDecimal])
 
 (s/defrecord WagerPlaced [player-id :- s/Str
+                          wager-id :- s/Uuid
                           amount :- BigDecimal])
 
 (s/defrecord WinningsEarned [player-id :- s/Str

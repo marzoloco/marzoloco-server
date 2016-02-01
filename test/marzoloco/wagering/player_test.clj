@@ -6,6 +6,8 @@
 
 (use-fixtures :once schema.test/validate-schemas)
 
+(defn uuid [] (java.util.UUID/randomUUID))
+
 (deftest apply-points-deposited-event
   (let [player-id "betty"
         initial-bankroll 0.0M
@@ -23,14 +25,18 @@
 (deftest apply-wager-placed-event
   (let [player-id "betty"
         initial-bankroll 200.0M
+        wager-id (uuid)
         wager-amount 50.0M
         expected-bankroll (- initial-bankroll wager-amount)
-        initial-player (map->Player {:player-id player-id
-                                     :bankroll  initial-bankroll})
+        initial-player (map->Player {:player-id   player-id
+                                     :open-wagers []
+                                     :bankroll    initial-bankroll})
         wager-placed-event (e/map->WagerPlaced {:player-id player-id
+                                                :wager-id  wager-id
                                                 :amount    wager-amount})
-        expected-player (map->Player {:player-id player-id
-                                      :bankroll  expected-bankroll})
+        expected-player (map->Player {:player-id   player-id
+                                      :bankroll    expected-bankroll
+                                      :open-wagers [wager-id]})
         actual-player (apply-event initial-player wager-placed-event)]
     (is (= expected-player actual-player))))
 

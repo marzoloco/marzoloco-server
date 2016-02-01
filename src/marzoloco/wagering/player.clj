@@ -5,6 +5,7 @@
 
 (defrecord Player [player-id
                    bankroll
+                   open-wagers
                    winnings])
 
 (defmulti apply-event (fn [_ event] (class event)))
@@ -17,7 +18,9 @@
 (s/defmethod apply-event WagerPlaced
              [player :- Player
               event :- WagerPlaced]
-             (update-in player [:bankroll] - (:amount event)))
+             (-> player
+                 (update-in [:bankroll] - (:amount event))
+                 (update-in [:open-wagers] conj (:wager-id event))))
 
 (s/defmethod apply-event WinningsEarned
              [player :- Player
