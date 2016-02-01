@@ -25,18 +25,21 @@
 (deftest apply-wager-placed-event
   (let [player-id (uuid)
         initial-bankroll 200.0M
+        other-wager-id (uuid)
+        initial-open-wagers [other-wager-id]
         wager-id (uuid)
         wager-amount 50.0M
         expected-bankroll (- initial-bankroll wager-amount)
+        expected-open-wagers [other-wager-id wager-id]
         initial-player (map->Player {:player-id   player-id
-                                     :open-wagers []
+                                     :open-wagers initial-open-wagers
                                      :bankroll    initial-bankroll})
         wager-placed-event (e/map->WagerPlaced {:player-id player-id
                                                 :wager-id  wager-id
                                                 :amount    wager-amount})
         expected-player (map->Player {:player-id   player-id
                                       :bankroll    expected-bankroll
-                                      :open-wagers [wager-id]})
+                                      :open-wagers expected-open-wagers})
         actual-player (apply-event initial-player wager-placed-event)]
     (is (= expected-player actual-player))))
 
