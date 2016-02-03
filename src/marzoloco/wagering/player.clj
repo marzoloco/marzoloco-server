@@ -26,8 +26,7 @@
              [player :- Player
               {:keys [wager-id] :as event} :- WagerWon]
              (-> player
-                 (update-in [:open-wagers] (fn [open-wagers wager-id]
-                                             (remove #{wager-id} open-wagers)) wager-id)))
+                 (update-in [:open-wagers] #(remove #{%2} %1) wager-id)))
 
 (s/defmethod apply-event WinningsEarned
              [player :- Player
