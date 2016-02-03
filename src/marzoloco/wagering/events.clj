@@ -8,6 +8,15 @@
                           wager-id :- s/Uuid
                           amount :- BigDecimal])
 
+(s/defrecord WagerWithdrawn [player-id :- s/Uuid
+                             wager-id :- s/Uuid])
+
+(s/defrecord WagerCancelled [player-id :- s/Uuid
+                             wager-id :- s/Uuid])
+
+(s/defrecord WagerLocked [player-id :- s/Uuid
+                          wager-id :- s/Uuid])
+
 (s/defrecord WagerWon [player-id :- s/Uuid
                        wager-id :- s/Uuid])
 

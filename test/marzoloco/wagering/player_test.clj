@@ -42,6 +42,47 @@
         actual-player (apply-event initial-player wager-placed-event)]
     (is (= expected-player actual-player))))
 
+(deftest apply-WagerWithdrawnCancelled-event
+  (let [player-id (uuid)
+        initial-bankroll 150.0M
+        wager (map->Wager {:wager-id (uuid) :amount 50.0M :locked? false})
+        initial-open-wagers #{wager}
+        expected-bankroll (+ initial-bankroll (:amount wager))
+        expected-open-wagers #{}
+        initial-player (map->Player {:player-id   player-id
+                                     :open-wagers initial-open-wagers
+                                     :bankroll    initial-bankroll})
+        expected-player (map->Player {:player-id   player-id
+                                      :bankroll    expected-bankroll
+                                      :open-wagers expected-open-wagers})]
+    (testing "WagerWithdrawn increases bankroll and removes wager from open-wagers"
+      (let [wager-withdrawn-event (e/map->WagerWithdrawn {:player-id player-id
+                                                          :wager-id  (:wager-id wager)})
+            actual-player (apply-event initial-player wager-withdrawn-event)]
+        (is (= expected-player actual-player))))
+    (testing "WagerCancelled increases bankroll and removes wager from open-wagers"
+      (let [wager-cancelled-event (e/map->WagerCancelled {:player-id player-id
+                                                          :wager-id  (:wager-id wager)})
+            actual-player (apply-event initial-player wager-cancelled-event)]
+        (is (= expected-player actual-player))))))
+
+(deftest apply-WagerLocked-event
+  (let [player-id (uuid)
+        wager (map->Wager {:wager-id (uuid) :amount 50.0M :locked? false})
+        wager-id (:wager-id wager)
+        other-wager (map->Wager {:wager-id (uuid) :amount 100.0M :locked? false})
+        initial-open-wagers #{wager other-wager}
+        expected-wager (assoc wager :locked? true)
+        expected-open-wagers #{expected-wager other-wager}
+        initial-player (map->Player {:player-id   player-id
+                                     :open-wagers initial-open-wagers})
+        wager-locked-event (e/map->WagerLocked {:player-id player-id
+                                                :wager-id  wager-id})
+        expected-player (map->Player {:player-id   player-id
+                                      :open-wagers expected-open-wagers})
+        actual-player (apply-event initial-player wager-locked-event)]
+    (is (= expected-player actual-player))))
+
 (deftest apply-WagerWonPushedLost-event
   (let [player-id (uuid)
         wager (map->Wager {:wager-id (uuid) :amount 23.45M :locked? true})
