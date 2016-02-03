@@ -8,6 +8,10 @@
                    open-wagers
                    winnings])
 
+(defrecord Wager [wager-id
+                  amount
+                  locked?])
+
 (defn dispatch-apply-event [aggregate event] (class event))
 
 (defmulti apply-event #'dispatch-apply-event)
@@ -20,13 +24,17 @@
 (s/defmethod apply-event WagerPlaced
              [player :- Player
               {:keys [amount wager-id] :as event} :- WagerPlaced]
-             (-> player
-                 (update-in [:bankroll] - amount)
-                 (update-in [:open-wagers] conj wager-id)))
+             (let [wager (map->Wager {:wager-id wager-id
+                                      :amount   amount
+                                      :locked?  false})]
+               (-> player
+                   (update-in [:bankroll] - amount)
+                   (update-in [:open-wagers] conj wager))))
 
 (defn remove-from-open-wagers
   [player wager-id]
-  (update-in player [:open-wagers] #(set (remove #{%2} %1)) wager-id))
+  (let [wager (first (filter #(= (:wager-id %) wager-id) (:open-wagers player)))]
+    (update-in player [:open-wagers] #(set (remove #{%2} %1)) wager)))
 
 (s/defmethod apply-event WagerWon
              [player :- Player

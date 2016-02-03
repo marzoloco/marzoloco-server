@@ -25,18 +25,17 @@
 (deftest apply-WagerPlaced-event
   (let [player-id (uuid)
         initial-bankroll 200.0M
-        other-wager-id (uuid)
-        initial-open-wagers #{other-wager-id}
-        wager-id (uuid)
-        wager-amount 50.0M
-        expected-bankroll (- initial-bankroll wager-amount)
-        expected-open-wagers #{wager-id other-wager-id}
+        other-wager (map->Wager {:wager-id (uuid) :amount 12.34M :locked? false})
+        initial-open-wagers #{other-wager}
+        placed-wager (map->Wager {:wager-id (uuid) :amount 23.45M :locked? false})
+        expected-bankroll (- initial-bankroll (:amount placed-wager))
+        expected-open-wagers #{placed-wager other-wager}
         initial-player (map->Player {:player-id   player-id
                                      :open-wagers initial-open-wagers
                                      :bankroll    initial-bankroll})
         wager-placed-event (e/map->WagerPlaced {:player-id player-id
-                                                :wager-id  wager-id
-                                                :amount    wager-amount})
+                                                :wager-id  (:wager-id placed-wager)
+                                                :amount    (:amount placed-wager)})
         expected-player (map->Player {:player-id   player-id
                                       :bankroll    expected-bankroll
                                       :open-wagers expected-open-wagers})
@@ -45,10 +44,11 @@
 
 (deftest apply-WagerWonPushedLost-event
   (let [player-id (uuid)
-        wager-id (uuid)
-        other-wager-id (uuid)
-        initial-open-wagers #{other-wager-id wager-id}
-        expected-open-wagers #{other-wager-id}
+        wager (map->Wager {:wager-id (uuid) :amount 23.45M :locked? true})
+        wager-id (:wager-id wager)
+        other-wager (map->Wager {:wager-id (uuid) :amount 12.34M :locked? false})
+        initial-open-wagers #{other-wager wager}
+        expected-open-wagers #{other-wager}
         initial-player (map->Player {:player-id   player-id
                                      :open-wagers initial-open-wagers})
         expected-player (map->Player {:player-id   player-id
