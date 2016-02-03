@@ -8,7 +8,9 @@
                    open-wagers
                    winnings])
 
-(defmulti apply-event (fn [_ event] (class event)))
+(defn dispatch-apply-event [aggregate event] (class event))
+
+(defmulti apply-event #'dispatch-apply-event)
 
 (s/defmethod apply-event PointsDeposited
              [player :- Player
