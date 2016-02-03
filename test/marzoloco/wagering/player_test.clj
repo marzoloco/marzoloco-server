@@ -30,7 +30,7 @@
         wager-id (uuid)
         wager-amount 50.0M
         expected-bankroll (- initial-bankroll wager-amount)
-        expected-open-wagers #{other-wager-id wager-id}
+        expected-open-wagers #{wager-id other-wager-id}
         initial-player (map->Player {:player-id   player-id
                                      :open-wagers initial-open-wagers
                                      :bankroll    initial-bankroll})
@@ -43,21 +43,31 @@
         actual-player (apply-event initial-player wager-placed-event)]
     (is (= expected-player actual-player))))
 
-(deftest apply-WagerWon-event
-  (testing "WagerWon event removes wager from open-wagers")
+(deftest apply-WagerWonPushedLost-event
   (let [player-id (uuid)
-        won-wager-id (uuid)
+        wager-id (uuid)
         other-wager-id (uuid)
-        initial-open-wagers #{won-wager-id other-wager-id}
+        initial-open-wagers #{other-wager-id wager-id}
         expected-open-wagers #{other-wager-id}
         initial-player (map->Player {:player-id   player-id
                                      :open-wagers initial-open-wagers})
-        wager-won-event (e/map->WagerWon {:player-id player-id
-                                          :wager-id  won-wager-id})
         expected-player (map->Player {:player-id   player-id
-                                      :open-wagers expected-open-wagers})
-        actual-player (apply-event initial-player wager-won-event)]
-    (is (= expected-player actual-player))))
+                                      :open-wagers expected-open-wagers})]
+    (testing "WagerWon event removes wager from open-wagers"
+      (let [wager-won-event (e/map->WagerWon {:player-id player-id
+                                              :wager-id  wager-id})
+            actual-player (apply-event initial-player wager-won-event)]
+        (is (= expected-player actual-player))))
+    (testing "WagerPushed event removes wager from open-wagers"
+      (let [wager-pushed-event (e/map->WagerPushed {:player-id player-id
+                                                    :wager-id  wager-id})
+            actual-player (apply-event initial-player wager-pushed-event)]
+        (is (= expected-player actual-player))))
+    (testing "WagerLost event removes wager from open-wagers"
+      (let [wager-lost-event (e/map->WagerLost {:player-id player-id
+                                                :wager-id  wager-id})
+            actual-player (apply-event initial-player wager-lost-event)]
+        (is (= expected-player actual-player))))))
 
 (deftest apply-WinningsEarned-event
   (let [player-id (uuid)

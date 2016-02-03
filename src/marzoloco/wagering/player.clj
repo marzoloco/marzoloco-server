@@ -1,7 +1,7 @@
 (ns marzoloco.wagering.player
   (:require [schema.core :as s]
             [marzoloco.wagering.events :as e])
-  (:import (marzoloco.wagering.events PointsDeposited WagerPlaced WinningsEarned WagerWon)))
+  (:import (marzoloco.wagering.events PointsDeposited WagerPlaced WinningsEarned WagerWon WagerPushed WagerLost)))
 
 (defrecord Player [player-id
                    bankroll
@@ -22,11 +22,27 @@
                  (update-in [:bankroll] - amount)
                  (update-in [:open-wagers] conj wager-id)))
 
+(defn remove-from-open-wagers
+  [player wager-id]
+  (update-in player [:open-wagers] #(set (remove #{%2} %1)) wager-id))
+
 (s/defmethod apply-event WagerWon
              [player :- Player
               {:keys [wager-id] :as event} :- WagerWon]
              (-> player
-                 (update-in [:open-wagers] #(set (remove #{%2} %1)) wager-id)))
+                 (remove-from-open-wagers wager-id)))
+
+(s/defmethod apply-event WagerPushed
+             [player :- Player
+              {:keys [wager-id] :as event} :- WagerPushed]
+             (-> player
+                 (remove-from-open-wagers wager-id)))
+
+(s/defmethod apply-event WagerLost
+             [player :- Player
+              {:keys [wager-id] :as event} :- WagerLost]
+             (-> player
+                 (remove-from-open-wagers wager-id)))
 
 (s/defmethod apply-event WinningsEarned
              [player :- Player
