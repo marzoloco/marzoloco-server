@@ -26,11 +26,11 @@
   (let [player-id (uuid)
         initial-bankroll 200.0M
         other-wager-id (uuid)
-        initial-open-wagers [other-wager-id]
+        initial-open-wagers #{other-wager-id}
         wager-id (uuid)
         wager-amount 50.0M
         expected-bankroll (- initial-bankroll wager-amount)
-        expected-open-wagers [other-wager-id wager-id]
+        expected-open-wagers #{other-wager-id wager-id}
         initial-player (map->Player {:player-id   player-id
                                      :open-wagers initial-open-wagers
                                      :bankroll    initial-bankroll})
@@ -48,8 +48,8 @@
   (let [player-id (uuid)
         won-wager-id (uuid)
         other-wager-id (uuid)
-        initial-open-wagers [won-wager-id other-wager-id]
-        expected-open-wagers [other-wager-id]
+        initial-open-wagers #{won-wager-id other-wager-id}
+        expected-open-wagers #{other-wager-id}
         initial-player (map->Player {:player-id   player-id
                                      :open-wagers initial-open-wagers})
         wager-won-event (e/map->WagerWon {:player-id player-id
