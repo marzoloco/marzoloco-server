@@ -9,8 +9,7 @@
 ;; or withdraw a wager that has been locked.
 (defrecord Player [player-id
                    bankroll
-                   open-wagers
-                   winnings])
+                   open-wagers])
 
 (defrecord Wager [wager-id
                   amount
@@ -92,4 +91,5 @@
 (s/defmethod apply-event WinningsEarned
              [player :- Player
               {:keys [amount] :as event} :- WinningsEarned]
-             (update-in player [:winnings] + amount))
+             ;; No apparent need for the Player aggregate to store total winnings
+             player)

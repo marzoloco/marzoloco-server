@@ -112,15 +112,11 @@
 
 (deftest apply-WinningsEarned-event
   (let [player-id (uuid)
-        initial-winnings 100.0M
         earned-amount 50.0M
-        expected-winnings (+ initial-winnings earned-amount)
-        initial-player (map->Player {:player-id player-id
-                                     :winnings  initial-winnings})
+        initial-player (map->Player {:player-id player-id})
         winnings-earned-event (e/map->WinningsEarned {:player-id player-id
                                                       :amount    earned-amount})
-        expected-player (map->Player {:player-id player-id
-                                      :winnings  expected-winnings})
+        expected-player (map->Player {:player-id player-id})
         actual-player (apply-event initial-player winnings-earned-event)]
     (is (= expected-player actual-player))))
 
