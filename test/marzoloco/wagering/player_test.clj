@@ -120,3 +120,9 @@
         actual-player (apply-event initial-player winnings-earned-event)]
     (is (= expected-player actual-player))))
 
+(deftest execute-PlaceWager-command
+  ; build command
+  ; build aggregate from events
+  ; execute command, passing in the aggregate
+  ; assert that the events are correct
+  nil)
