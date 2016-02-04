@@ -2,6 +2,7 @@
   (:require [clojure.test :refer :all]
             [marzoloco.wagering.player :refer :all]
             [marzoloco.wagering.events :as e]
+            [marzoloco.wagering.commands :as c]
             [schema.test]))
 
 (use-fixtures :once schema.test/validate-schemas)
@@ -120,9 +121,33 @@
         actual-player (apply-event initial-player winnings-earned-event)]
     (is (= expected-player actual-player))))
 
+
 (deftest execute-PlaceWager-command
-  ; build command
-  ; build aggregate from events
-  ; execute command, passing in the aggregate
-  ; assert that the events are correct
-  nil)
+  (let [player-id (uuid)
+        bankroll 123.45M
+        player (map->Player {:player-id player-id
+                             :bankroll  bankroll})
+        wager-id (uuid)
+        base-placeWager-cmd (c/map->PlaceWager {:player-id player-id
+                                                :wager-id  wager-id
+                                                :game-id   (uuid)
+                                                :bet-id    (uuid)
+                                                :side      :a})]
+    (testing "PlaceWager for less than bankroll -> WagerPlaced"
+      (let [wager-amount (/ bankroll 2)
+            placeWager-cmd (assoc base-placeWager-cmd :amount wager-amount)
+            expected-events [(e/map->WagerPlaced {:player-id player-id
+                                                  :wager-id  wager-id
+                                                  :amount    wager-amount})]
+            actual-events (execute-command player placeWager-cmd)]
+        (is (= expected-events actual-events))))
+    (testing "PlaceWager for entire bankroll -> WagerPlaced"
+      (let [wager-amount bankroll
+            placeWager-cmd (assoc base-placeWager-cmd :amount wager-amount)
+            expected-events [(e/map->WagerPlaced {:player-id player-id
+                                                  :wager-id  wager-id
+                                                  :amount    wager-amount})]
+            actual-events (execute-command player placeWager-cmd)]
+        (is (= expected-events actual-events))))
+    (testing "PlaceWager over bankroll -> OverdrawAttempted")))
+

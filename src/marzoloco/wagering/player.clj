@@ -1,8 +1,10 @@
 (ns marzoloco.wagering.player
   (:require [schema.core :as s]
-            [marzoloco.wagering.events :as e])
+            [marzoloco.wagering.events :as e]
+            [marzoloco.wagering.commands :as c])
   (:import (marzoloco.wagering.events PointsDeposited WagerPlaced WagerWithdrawn WagerCancelled
-                                      WagerLocked WagerWon WagerPushed WagerLost WinningsEarned)))
+                                      WagerLocked WagerWon WagerPushed WagerLost WinningsEarned)
+           (marzoloco.wagering.commands PlaceWager)))
 
 
 ;; The Player aggregate ensures that the player doesn't overdraw their bankroll
@@ -93,3 +95,15 @@
               {:keys [amount] :as event} :- WinningsEarned]
              ;; No apparent need for the Player aggregate to store total winnings
              player)
+
+
+(defn dispatch-execute-command [aggregate command] (class command))
+
+(defmulti execute-command #'dispatch-execute-command)
+
+(s/defmethod execute-command PlaceWager
+             [{:keys [player-id] :as player} :- Player
+              {:keys [wager-id amount] :as command} :- PlaceWager]
+             [(e/map->WagerPlaced {:player-id player-id
+                                   :wager-id  wager-id
+                                   :amount    amount})])
