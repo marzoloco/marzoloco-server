@@ -8,6 +8,9 @@
                           wager-id :- s/Uuid
                           amount :- BigDecimal])
 
+(s/defrecord OverdrawAttempted [player-id :- s/Uuid
+                                wager-id :- s/Uuid])
+
 (s/defrecord WagerWithdrawn [player-id :- s/Uuid
                              wager-id :- s/Uuid])
 

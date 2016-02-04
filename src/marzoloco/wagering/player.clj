@@ -102,8 +102,11 @@
 (defmulti execute-command #'dispatch-execute-command)
 
 (s/defmethod execute-command PlaceWager
-             [{:keys [player-id] :as player} :- Player
+             [{:keys [player-id bankroll] :as player} :- Player
               {:keys [wager-id amount] :as command} :- PlaceWager]
-             [(e/map->WagerPlaced {:player-id player-id
-                                   :wager-id  wager-id
-                                   :amount    amount})])
+             (if (<= amount bankroll)
+               [(e/map->WagerPlaced {:player-id player-id
+                                     :wager-id  wager-id
+                                     :amount    amount})]
+               [(e/map->OverdrawAttempted {:player-id player-id
+                                           :wager-id  wager-id})]))

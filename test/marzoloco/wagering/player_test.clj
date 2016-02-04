@@ -149,5 +149,11 @@
                                                   :amount    wager-amount})]
             actual-events (execute-command player placeWager-cmd)]
         (is (= expected-events actual-events))))
-    (testing "PlaceWager over bankroll -> OverdrawAttempted")))
+    (testing "PlaceWager over bankroll -> OverdrawAttempted"
+      (let [wager-amount (* bankroll 2)
+            placeWager-cmd (assoc base-placeWager-cmd :amount wager-amount)
+            expected-events [(e/map->OverdrawAttempted {:player-id player-id
+                                                        :wager-id  wager-id})]
+            actual-events (execute-command player placeWager-cmd)]
+        (is (= expected-events actual-events))))))
 
