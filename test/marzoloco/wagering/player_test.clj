@@ -122,6 +122,18 @@
     (is (= expected-player actual-player))))
 
 
+(deftest execute-PointsDeposited-command
+  (let [player-id (uuid)
+        player (map->Player {:player-id player-id})]
+    (testing "DepositPoints -> PointsDeposited"
+      (let [deposited-amount 200.00M
+            depositPoints-cmd (c/map->DepositPoints {:player-id player-id
+                                                   :amount    deposited-amount})
+            expected-events [(e/map->PointsDeposited {:player-id player-id
+                                                      :amount    deposited-amount})]
+            actual-events (execute-command player depositPoints-cmd)]
+        (is (= expected-events actual-events))))))
+
 (deftest execute-PlaceWager-command
   (let [player-id (uuid)
         bankroll 123.45M

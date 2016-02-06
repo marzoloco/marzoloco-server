@@ -4,7 +4,7 @@
             [marzoloco.wagering.commands :as c])
   (:import (marzoloco.wagering.events PointsDeposited WagerPlaced WagerWithdrawn WagerCancelled
                                       WagerLocked WagerWon WagerPushed WagerLost WinningsEarned)
-           (marzoloco.wagering.commands PlaceWager)))
+           (marzoloco.wagering.commands DepositPoints PlaceWager)))
 
 
 ;; The Player aggregate ensures that the player doesn't overdraw their bankroll
@@ -100,6 +100,12 @@
 (defn dispatch-execute-command [aggregate command] (class command))
 
 (defmulti execute-command #'dispatch-execute-command)
+
+(s/defmethod execute-command DepositPoints
+             [{:keys [player-id] :as player} :- Player
+              {:keys [amount] :as command} :- DepositPoints]
+             [(e/map->PointsDeposited {:player-id player-id
+                                       :amount    amount})])
 
 (s/defmethod execute-command PlaceWager
              [{:keys [player-id bankroll] :as player} :- Player
