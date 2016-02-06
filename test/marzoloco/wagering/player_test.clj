@@ -128,7 +128,7 @@
     (testing "DepositPoints -> PointsDeposited"
       (let [deposited-amount 200.00M
             depositPoints-cmd (c/map->DepositPoints {:player-id player-id
-                                                   :amount    deposited-amount})
+                                                     :amount    deposited-amount})
             expected-events [(e/map->PointsDeposited {:player-id player-id
                                                       :amount    deposited-amount})]
             actual-events (execute-command player depositPoints-cmd)]
@@ -169,3 +169,42 @@
             actual-events (execute-command player placeWager-cmd)]
         (is (= expected-events actual-events))))))
 
+(deftest execute-WithdrawWager-command
+  (let [player-id (uuid)
+        bankroll 123.45M
+        wager-id (uuid)
+        wager (map->Wager {:wager-id wager-id
+                           :amount   50.0M
+                           :locked?  false})
+        other-wager (map->Wager {:wager-id (uuid)
+                                 :amount   25.0M
+                                 :locked?  false})
+        player (map->Player {:player-id   player-id
+                             :bankroll    bankroll
+                             :open-wagers #{wager other-wager}})
+        withdrawWager-cmd (c/map->WithdrawWager {:player-id player-id
+                                                 :wager-id  wager-id})
+        expected-events [(e/map->WagerWithdrawn {:player-id player-id
+                                                 :wager-id  wager-id})]
+        actual-events (execute-command player withdrawWager-cmd)]
+    (is (= expected-events actual-events))))
+
+(deftest execute-CancelWager-command
+  (let [player-id (uuid)
+        bankroll 123.45M
+        wager-id (uuid)
+        wager (map->Wager {:wager-id wager-id
+                           :amount   50.0M
+                           :locked?  false})
+        other-wager (map->Wager {:wager-id (uuid)
+                                 :amount   25.0M
+                                 :locked?  false})
+        player (map->Player {:player-id   player-id
+                             :bankroll    bankroll
+                             :open-wagers #{wager other-wager}})
+        cancelWager-cmd (c/map->CancelWager {:player-id player-id
+                                             :wager-id  wager-id})
+        expected-events [(e/map->WagerCancelled {:player-id player-id
+                                                 :wager-id  wager-id})]
+        actual-events (execute-command player cancelWager-cmd)]
+    (is (= expected-events actual-events))))

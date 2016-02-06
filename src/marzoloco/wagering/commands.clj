@@ -21,3 +21,11 @@
 ;; It's obvious that bet-id and side have to be in this command, but they're not currently
 ;; part of the player aggregate. Do they belong in that aggregate, or is there a different
 ;; aggregate that turns results into win/loss for a given wager?
+
+(s/defrecord WithdrawWager
+  [player-id :- s/Uuid
+   wager-id :- s/Uuid])
+
+(s/defrecord CancelWager
+  [player-id :- s/Uuid
+   wager-id :- s/Uuid])
