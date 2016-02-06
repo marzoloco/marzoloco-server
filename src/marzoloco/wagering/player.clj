@@ -4,7 +4,7 @@
             [marzoloco.wagering.commands])
   (:import (marzoloco.wagering.events PointsDeposited WagerPlaced WagerWithdrawn WagerCancelled
                                       WagerLocked WagerWon WagerPushed WagerLost WinningsEarned)
-           (marzoloco.wagering.commands DepositPoints PlaceWager WithdrawWager CancelWager)))
+           (marzoloco.wagering.commands DepositPoints PlaceWager WithdrawWager CancelWager LockWager)))
 
 
 ;; The Player aggregate ensures that the player doesn't overdraw their bankroll
@@ -128,3 +128,9 @@
               {:keys [wager-id] :as command} :- CancelWager]
              [(e/map->WagerCancelled {:player-id player-id
                                       :wager-id  wager-id})])
+
+(s/defmethod execute-command LockWager
+             [{:keys [player-id] :as player} :- Player
+              {:keys [wager-id] :as command} :- LockWager]
+             [(e/map->WagerLocked {:player-id player-id
+                                   :wager-id  wager-id})])

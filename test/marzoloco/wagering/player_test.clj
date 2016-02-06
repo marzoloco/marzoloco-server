@@ -208,3 +208,21 @@
                                                  :wager-id  wager-id})]
         actual-events (execute-command player cancelWager-cmd)]
     (is (= expected-events actual-events))))
+
+(deftest execute-LockWager-command
+  (let [player-id (uuid)
+        wager-id (uuid)
+        wager (map->Wager {:wager-id wager-id
+                           :amount   50.0M
+                           :locked?  false})
+        other-wager (map->Wager {:wager-id (uuid)
+                                 :amount   25.0M
+                                 :locked?  false})
+        player (map->Player {:player-id   player-id
+                             :open-wagers #{wager other-wager}})
+        lockWager-cmd (c/map->LockWager {:player-id player-id
+                                         :wager-id  wager-id})
+        expected-events [(e/map->WagerLocked {:player-id player-id
+                                              :wager-id  wager-id})]
+        actual-events (execute-command player lockWager-cmd)]
+    (is (= expected-events actual-events))))

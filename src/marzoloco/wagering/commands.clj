@@ -29,3 +29,7 @@
 (s/defrecord CancelWager
   [player-id :- s/Uuid
    wager-id :- s/Uuid])
+
+(s/defrecord LockWager
+  [player-id :- s/Uuid
+   wager-id :- s/Uuid])
