@@ -1,7 +1,7 @@
 (ns marzoloco.wagering.player
   (:require [schema.core :as s]
             [marzoloco.wagering.events :as e]
-            [marzoloco.wagering.commands :as c])
+            [marzoloco.wagering.commands])
   (:import (marzoloco.wagering.events PointsDeposited WagerPlaced WagerWithdrawn WagerCancelled
                                       WagerLocked WagerWon WagerPushed WagerLost WinningsEarned)
            (marzoloco.wagering.commands DepositPoints PlaceWager WithdrawWager CancelWager)))
@@ -28,7 +28,7 @@
     (update-in player [:open-wagers] #(set (remove #{%2} %1)) wager)))
 
 
-(defn dispatch-apply-event [aggregate event] (class event))
+(defn dispatch-apply-event [player event] (class event))
 
 (defmulti apply-event #'dispatch-apply-event)
 
@@ -97,7 +97,7 @@
              player)
 
 
-(defn dispatch-execute-command [aggregate command] (class command))
+(defn dispatch-execute-command [player command] (class command))
 
 (defmulti execute-command #'dispatch-execute-command)
 
