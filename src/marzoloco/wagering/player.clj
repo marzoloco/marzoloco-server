@@ -120,8 +120,12 @@
 (s/defmethod execute-command WithdrawWager
              [{:keys [player-id] :as player} :- Player
               {:keys [wager-id] :as command} :- WithdrawWager]
-             [(e/map->WagerWithdrawn {:player-id player-id
-                                      :wager-id  wager-id})])
+             (let [wager (find-open-wager player wager-id)]
+               (if (:locked? wager)
+                 [(e/map->LockedWagerWithdrawAttempted {:player-id player-id
+                                                        :wager-id  wager-id})]
+                 [(e/map->WagerWithdrawn {:player-id player-id
+                                          :wager-id  wager-id})])))
 
 (s/defmethod execute-command CancelWager
              [{:keys [player-id] :as player} :- Player
@@ -134,3 +138,5 @@
               {:keys [wager-id] :as command} :- LockWager]
              [(e/map->WagerLocked {:player-id player-id
                                    :wager-id  wager-id})])
+
+

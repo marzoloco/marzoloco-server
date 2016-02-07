@@ -14,6 +14,9 @@
 (s/defrecord WagerWithdrawn [player-id :- s/Uuid
                              wager-id :- s/Uuid])
 
+(s/defrecord LockedWagerWithdrawAttempted [player-id :- s/Uuid
+                                           wager-id :- s/Uuid])
+
 (s/defrecord WagerCancelled [player-id :- s/Uuid
                              wager-id :- s/Uuid])
 

@@ -173,21 +173,33 @@
   (let [player-id (uuid)
         bankroll 123.45M
         wager-id (uuid)
-        wager (map->Wager {:wager-id wager-id
-                           :amount   50.0M
-                           :locked?  false})
         other-wager (map->Wager {:wager-id (uuid)
                                  :amount   25.0M
                                  :locked?  false})
-        player (map->Player {:player-id   player-id
-                             :bankroll    bankroll
-                             :open-wagers #{wager other-wager}})
         withdrawWager-cmd (c/map->WithdrawWager {:player-id player-id
-                                                 :wager-id  wager-id})
-        expected-events [(e/map->WagerWithdrawn {:player-id player-id
                                                  :wager-id  wager-id})]
-        actual-events (execute-command player withdrawWager-cmd)]
-    (is (= expected-events actual-events))))
+    (testing "WithdrawWager on not locked wager -> WagerWithdrawn"
+      (let [wager (map->Wager {:wager-id wager-id
+                               :amount   50.0M
+                               :locked?  false})
+            player (map->Player {:player-id   player-id
+                                 :bankroll    bankroll
+                                 :open-wagers #{wager other-wager}})
+            expected-events [(e/map->WagerWithdrawn {:player-id player-id
+                                                     :wager-id  wager-id})]
+            actual-events (execute-command player withdrawWager-cmd)]
+        (is (= expected-events actual-events))))
+    (testing "WithdrawWager on locked wager -> LockedWagerWithdrawAttempted"
+      (let [wager (map->Wager {:wager-id wager-id
+                               :amount   50.0M
+                               :locked?  true})
+            player (map->Player {:player-id   player-id
+                                 :bankroll    bankroll
+                                 :open-wagers #{wager other-wager}})
+            expected-events [(e/map->LockedWagerWithdrawAttempted {:player-id player-id
+                                                                   :wager-id  wager-id})]
+            actual-events (execute-command player withdrawWager-cmd)]
+        (is (= expected-events actual-events))))))
 
 (deftest execute-CancelWager-command
   (let [player-id (uuid)
