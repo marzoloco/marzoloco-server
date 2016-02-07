@@ -9,6 +9,7 @@
 
 (defn uuid [] (java.util.UUID/randomUUID))
 
+
 (deftest apply-PointsDeposited-event
   (let [player-id (uuid)
         initial-bankroll 0.0M
@@ -26,9 +27,9 @@
 (deftest apply-WagerPlaced-event
   (let [player-id (uuid)
         initial-bankroll 200.0M
-        other-wager (map->Wager {:wager-id (uuid) :amount 12.34M :locked? false})
+        other-wager (map->Wager {:wager-id (uuid) :amount 12.34M :odds 2.0M :locked? false})
         initial-open-wagers #{other-wager}
-        placed-wager (map->Wager {:wager-id (uuid) :amount 23.45M :locked? false})
+        placed-wager (map->Wager {:wager-id (uuid) :amount 23.45M :odds 2.0M :locked? false})
         expected-bankroll (- initial-bankroll (:amount placed-wager))
         expected-open-wagers #{placed-wager other-wager}
         initial-player (map->Player {:player-id   player-id
@@ -36,7 +37,8 @@
                                      :bankroll    initial-bankroll})
         wager-placed-event (e/map->WagerPlaced {:player-id player-id
                                                 :wager-id  (:wager-id placed-wager)
-                                                :amount    (:amount placed-wager)})
+                                                :amount    (:amount placed-wager)
+                                                :odds      2.0M})
         expected-player (map->Player {:player-id   player-id
                                       :bankroll    expected-bankroll
                                       :open-wagers expected-open-wagers})
@@ -140,17 +142,20 @@
         player (map->Player {:player-id player-id
                              :bankroll  bankroll})
         wager-id (uuid)
+        odds 3.0M
         base-placeWager-cmd (c/map->PlaceWager {:player-id player-id
                                                 :wager-id  wager-id
                                                 :game-id   (uuid)
                                                 :bet-id    (uuid)
-                                                :side      :a})]
+                                                :side      :a
+                                                :odds      odds})]
     (testing "PlaceWager for less than bankroll -> WagerPlaced"
       (let [wager-amount (/ bankroll 2)
             placeWager-cmd (assoc base-placeWager-cmd :amount wager-amount)
             expected-events [(e/map->WagerPlaced {:player-id player-id
                                                   :wager-id  wager-id
-                                                  :amount    wager-amount})]
+                                                  :amount    wager-amount
+                                                  :odds      odds})]
             actual-events (execute-command player placeWager-cmd)]
         (is (= expected-events actual-events))))
     (testing "PlaceWager for entire bankroll -> WagerPlaced"
@@ -158,7 +163,8 @@
             placeWager-cmd (assoc base-placeWager-cmd :amount wager-amount)
             expected-events [(e/map->WagerPlaced {:player-id player-id
                                                   :wager-id  wager-id
-                                                  :amount    wager-amount})]
+                                                  :amount    wager-amount
+                                                  :odds      odds})]
             actual-events (execute-command player placeWager-cmd)]
         (is (= expected-events actual-events))))
     (testing "PlaceWager over bankroll -> OverdrawAttempted"
@@ -243,17 +249,22 @@
   (let [player-id (uuid)
         wager-id (uuid)
         wager-amount 50.0M
+        odds 3.0M
+        expected-winnings 150.0M
+        expected-push-winnings 50.0M
         wager (map->Wager {:wager-id wager-id
-                           :amount   wager-amount})
+                           :amount   wager-amount
+                           :odds     3.0M})
         player (map->Player {:player-id   player-id
                              :open-wagers #{wager}})]
     (testing "CloseWonWager -> WagerWon and WinningsEarned"
-      (let [closeWonWager-cmd (c/map->CloseWonWager {:player-id player-id
+      (let [expected-winnings 150.0M
+            closeWonWager-cmd (c/map->CloseWonWager {:player-id player-id
                                                      :wager-id  wager-id})
             expected-events [(e/map->WagerWon {:player-id player-id
                                                :wager-id  wager-id})
                              (e/map->WinningsEarned {:player-id player-id
-                                                     :amount    100.0M})]
+                                                     :amount    expected-winnings})]
             actual-events (execute-command player closeWonWager-cmd)]
         (is (= expected-events actual-events))))
     (testing "ClosePushedWager -> WagerPushed and WinningsEarned"
@@ -262,7 +273,7 @@
             expected-events [(e/map->WagerPushed {:player-id player-id
                                                   :wager-id  wager-id})
                              (e/map->WinningsEarned {:player-id player-id
-                                                     :amount    50.0M})]
+                                                     :amount    expected-push-winnings})]
             actual-events (execute-command player closePushedWager-cmd)]
         (is (= expected-events actual-events))))
     (testing "CloseLostWager -> WagerLost"

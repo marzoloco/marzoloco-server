@@ -6,7 +6,8 @@
 
 (s/defrecord WagerPlaced [player-id :- s/Uuid
                           wager-id :- s/Uuid
-                          amount :- BigDecimal])
+                          amount :- BigDecimal
+                          odds :- BigDecimal])
 
 (s/defrecord OverdrawAttempted [player-id :- s/Uuid
                                 wager-id :- s/Uuid])

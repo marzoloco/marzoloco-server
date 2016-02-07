@@ -16,6 +16,7 @@
    bet-id :- s/Uuid
    side :- (s/enum :a :b)
    ; looking for better language to generically describe the sides of a bet
+   odds :- BigDecimal
    amount :- BigDecimal])
 
 ;; It's obvious that bet-id and side have to be in this command, but they're not currently

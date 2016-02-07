@@ -16,6 +16,7 @@
 
 (defrecord Wager [wager-id
                   amount
+                  odds
                   locked?])
 
 
@@ -40,9 +41,10 @@
 
 (s/defmethod apply-event WagerPlaced
              [player :- Player
-              {:keys [amount wager-id] :as event} :- WagerPlaced]
+              {:keys [wager-id amount odds] :as event} :- WagerPlaced]
              (let [wager (map->Wager {:wager-id wager-id
                                       :amount   amount
+                                      :odds     odds
                                       :locked?  false})]
                (-> player
                    (update-in [:bankroll] - amount)
@@ -110,11 +112,12 @@
 
 (s/defmethod execute-command PlaceWager
              [{:keys [player-id bankroll] :as player} :- Player
-              {:keys [wager-id amount] :as command} :- PlaceWager]
+              {:keys [wager-id amount odds] :as command} :- PlaceWager]
              (if (<= amount bankroll)
                [(e/map->WagerPlaced {:player-id player-id
                                      :wager-id  wager-id
-                                     :amount    amount})]
+                                     :amount    amount
+                                     :odds      odds})]
                [(e/map->OverdrawAttempted {:player-id player-id
                                            :wager-id  wager-id})]))
 
@@ -143,11 +146,11 @@
 (s/defmethod execute-command CloseWonWager
              [{:keys [player-id] :as player} :- Player
               {:keys [wager-id] :as command} :- CloseWonWager]
-             (let [wager (find-open-wager player wager-id)]
+             (let [{:keys [amount odds] :as wager} (find-open-wager player wager-id)]
                [(e/map->WagerWon {:player-id player-id
                                   :wager-id  wager-id})
                 (e/map->WinningsEarned {:player-id player-id
-                                        :amount    (* 2 (:amount wager))})]))
+                                        :amount    (* odds amount)})]))
 
 (s/defmethod execute-command ClosePushedWager
              [{:keys [player-id] :as player} :- Player
