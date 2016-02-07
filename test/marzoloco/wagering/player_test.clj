@@ -238,3 +238,37 @@
                                               :wager-id  wager-id})]
         actual-events (execute-command player lockWager-cmd)]
     (is (= expected-events actual-events))))
+
+(deftest execute-CloseWonWager-command
+  (let [player-id (uuid)
+        wager-id (uuid)
+        wager-amount 50.0M
+        wager (map->Wager {:wager-id wager-id
+                           :amount   wager-amount})
+        player (map->Player {:player-id   player-id
+                             :open-wagers #{wager}})]
+    (testing "CloseWonWager -> WagerWon and WinningsEarned"
+      (let [closeWonWager-cmd (c/map->CloseWonWager {:player-id player-id
+                                                     :wager-id  wager-id})
+            expected-events [(e/map->WagerWon {:player-id player-id
+                                               :wager-id  wager-id})
+                             (e/map->WinningsEarned {:player-id player-id
+                                                     :amount    100.0M})]
+            actual-events (execute-command player closeWonWager-cmd)]
+        (is (= expected-events actual-events))))
+    (testing "ClosePushedWager -> WagerPushed and WinningsEarned"
+      (let [closePushedWager-cmd (c/map->ClosePushedWager {:player-id player-id
+                                                           :wager-id  wager-id})
+            expected-events [(e/map->WagerPushed {:player-id player-id
+                                                  :wager-id  wager-id})
+                             (e/map->WinningsEarned {:player-id player-id
+                                                     :amount    50.0M})]
+            actual-events (execute-command player closePushedWager-cmd)]
+        (is (= expected-events actual-events))))
+    (testing "CloseLostWager -> WagerLost"
+      (let [closeLostWager-cmd (c/map->CloseLostWager {:player-id player-id
+                                                       :wager-id  wager-id})
+            expected-events [(e/map->WagerLost {:player-id player-id
+                                                :wager-id  wager-id})]
+            actual-events (execute-command player closeLostWager-cmd)]
+        (is (= expected-events actual-events))))))

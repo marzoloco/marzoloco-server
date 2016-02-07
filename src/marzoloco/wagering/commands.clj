@@ -33,3 +33,15 @@
 (s/defrecord LockWager
   [player-id :- s/Uuid
    wager-id :- s/Uuid])
+
+(s/defrecord CloseWonWager
+  [player-id :- s/Uuid
+   wager-id :- s/Uuid])
+
+(s/defrecord ClosePushedWager
+  [player-id :- s/Uuid
+   wager-id :- s/Uuid])
+
+(s/defrecord CloseLostWager
+  [player-id :- s/Uuid
+   wager-id :- s/Uuid])

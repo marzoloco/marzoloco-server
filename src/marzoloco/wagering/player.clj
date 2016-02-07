@@ -4,7 +4,8 @@
             [marzoloco.wagering.commands])
   (:import (marzoloco.wagering.events PointsDeposited WagerPlaced WagerWithdrawn WagerCancelled
                                       WagerLocked WagerWon WagerPushed WagerLost WinningsEarned)
-           (marzoloco.wagering.commands DepositPoints PlaceWager WithdrawWager CancelWager LockWager)))
+           (marzoloco.wagering.commands DepositPoints PlaceWager WithdrawWager CancelWager LockWager
+                                        CloseWonWager ClosePushedWager CloseLostWager)))
 
 
 ;; The Player aggregate ensures that the player doesn't overdraw their bankroll
@@ -139,4 +140,26 @@
              [(e/map->WagerLocked {:player-id player-id
                                    :wager-id  wager-id})])
 
+(s/defmethod execute-command CloseWonWager
+             [{:keys [player-id] :as player} :- Player
+              {:keys [wager-id] :as command} :- CloseWonWager]
+             (let [wager (find-open-wager player wager-id)]
+               [(e/map->WagerWon {:player-id player-id
+                                  :wager-id  wager-id})
+                (e/map->WinningsEarned {:player-id player-id
+                                        :amount    (* 2 (:amount wager))})]))
 
+(s/defmethod execute-command ClosePushedWager
+             [{:keys [player-id] :as player} :- Player
+              {:keys [wager-id] :as command} :- ClosePushedWager]
+             (let [wager (find-open-wager player wager-id)]
+               [(e/map->WagerPushed {:player-id player-id
+                                     :wager-id  wager-id})
+                (e/map->WinningsEarned {:player-id player-id
+                                        :amount    (:amount wager)})]))
+
+(s/defmethod execute-command CloseLostWager
+             [{:keys [player-id] :as player} :- Player
+              {:keys [wager-id] :as command} :- CloseLostWager]
+             [(e/map->WagerLost {:player-id player-id
+                                 :wager-id  wager-id})])
