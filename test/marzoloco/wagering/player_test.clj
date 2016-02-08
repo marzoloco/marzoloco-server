@@ -245,7 +245,7 @@
         actual-events (execute-command player lockWager-cmd)]
     (is (= expected-events actual-events))))
 
-(deftest execute-CloseWonWager-command
+(deftest execute-CloseWonPushedLostWager-command
   (let [player-id (uuid)
         wager-id (uuid)
         wager-amount 50.0M
@@ -254,12 +254,11 @@
         expected-push-winnings 50.0M
         wager (map->Wager {:wager-id wager-id
                            :amount   wager-amount
-                           :odds     3.0M})
+                           :odds     odds})
         player (map->Player {:player-id   player-id
                              :open-wagers #{wager}})]
     (testing "CloseWonWager -> WagerWon and WinningsEarned"
-      (let [expected-winnings 150.0M
-            closeWonWager-cmd (c/map->CloseWonWager {:player-id player-id
+      (let [closeWonWager-cmd (c/map->CloseWonWager {:player-id player-id
                                                      :wager-id  wager-id})
             expected-events [(e/map->WagerWon {:player-id player-id
                                                :wager-id  wager-id})
