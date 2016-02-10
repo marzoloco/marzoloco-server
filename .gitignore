@@ -1,4 +1,5 @@
 /target
+/lib
 /classes
 /checkouts
 pom.xml
@@ -9,3 +10,6 @@ pom.xml.asc
 /.nrepl-port
 .hgignore
 .hg/
+profiles.clj
+/.env
+*.log
