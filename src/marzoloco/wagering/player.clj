@@ -1,11 +1,7 @@
 (ns marzoloco.wagering.player
   (:require [schema.core :as s]
             [marzoloco.wagering.events :as e]
-            [marzoloco.wagering.commands])
-  (:import (marzoloco.wagering.events PointsDeposited WagerPlaced WagerWithdrawn WagerCancelled
-                                      WagerLocked WagerWon WagerPushed WagerLost WinningsEarned)
-           (marzoloco.wagering.commands DepositPoints PlaceWager WithdrawWager CancelWager LockWager
-                                        CloseWonWager ClosePushedWager CloseLostWager)))
+            [marzoloco.wagering.commands :as c]))
 
 
 ;; The Player aggregate ensures that the player doesn't overdraw their bankroll
@@ -30,18 +26,18 @@
     (update-in player [:open-wagers] #(set (remove #{%2} %1)) wager)))
 
 
-(defn dispatch-apply-event [player event] (class event))
+(defn dispatch-apply-event [player event] (:event-type event))
 
 (defmulti apply-event #'dispatch-apply-event)
 
-(s/defmethod apply-event PointsDeposited
+(s/defmethod apply-event :points-deposited
              [player :- Player
-              {:keys [amount] :as event} :- PointsDeposited]
+              {:keys [amount] :as event} :- e/PointsDeposited]
              (update-in player [:bankroll] + amount))
 
-(s/defmethod apply-event WagerPlaced
+(s/defmethod apply-event :wager-placed
              [player :- Player
-              {:keys [wager-id amount odds] :as event} :- WagerPlaced]
+              {:keys [wager-id amount odds] :as event} :- e/WagerPlaced]
              (let [wager (map->Wager {:wager-id wager-id
                                       :amount   amount
                                       :odds     odds
@@ -50,119 +46,131 @@
                    (update-in [:bankroll] - amount)
                    (update-in [:open-wagers] conj wager))))
 
-(s/defmethod apply-event WagerWithdrawn
+(s/defmethod apply-event :wager-withdrawn
              [player :- Player
-              {:keys [wager-id] :as event} :- WagerWithdrawn]
+              {:keys [wager-id] :as event} :- e/WagerWithdrawn]
              (let [wager (find-open-wager player wager-id)]
                (-> player
                    (update-in [:bankroll] + (:amount wager))
                    (remove-open-wager wager-id))))
 
-(s/defmethod apply-event WagerCancelled
+(s/defmethod apply-event :wager-cancelled
              [player :- Player
-              {:keys [wager-id] :as event} :- WagerCancelled]
+              {:keys [wager-id] :as event} :- e/WagerCancelled]
              (let [wager (find-open-wager player wager-id)]
                (-> player
                    (update-in [:bankroll] + (:amount wager))
                    (remove-open-wager wager-id))))
 
-(s/defmethod apply-event WagerLocked
+(s/defmethod apply-event :wager-locked
              [player :- Player
-              {:keys [wager-id] :as event} :- WagerLocked]
+              {:keys [wager-id] :as event} :- e/WagerLocked]
              (let [wager (find-open-wager player wager-id)
                    locked-wager (assoc wager :locked? true)]
                (-> player
                    (remove-open-wager wager-id)
                    (update-in [:open-wagers] conj locked-wager))))
 
-(s/defmethod apply-event WagerWon
+(s/defmethod apply-event :wager-won
              [player :- Player
-              {:keys [wager-id] :as event} :- WagerWon]
+              {:keys [wager-id] :as event} :- e/WagerWon]
              (-> player
                  (remove-open-wager wager-id)))
 
-(s/defmethod apply-event WagerPushed
+(s/defmethod apply-event :wager-pushed
              [player :- Player
-              {:keys [wager-id] :as event} :- WagerPushed]
+              {:keys [wager-id] :as event} :- e/WagerPushed]
              (-> player
                  (remove-open-wager wager-id)))
 
-(s/defmethod apply-event WagerLost
+(s/defmethod apply-event :wager-lost
              [player :- Player
-              {:keys [wager-id] :as event} :- WagerLost]
+              {:keys [wager-id] :as event} :- e/WagerLost]
              (-> player
                  (remove-open-wager wager-id)))
 
-(s/defmethod apply-event WinningsEarned
+(s/defmethod apply-event :winnings-earned
              [player :- Player
-              {:keys [amount] :as event} :- WinningsEarned]
+              {:keys [amount] :as event} :- e/WinningsEarned]
              ;; No apparent need for the Player aggregate to store total winnings
              player)
 
 
-(defn dispatch-execute-command [player command] (class command))
+(defn dispatch-execute-command [player command] (:command-type command))
 
 (defmulti execute-command #'dispatch-execute-command)
 
-(s/defmethod execute-command DepositPoints
+(s/defmethod execute-command :deposit-points
              [{:keys [player-id] :as player} :- Player
-              {:keys [amount] :as command} :- DepositPoints]
-             [(e/map->PointsDeposited {:player-id player-id
-                                       :amount    amount})])
+              {:keys [amount] :as command} :- c/DepositPoints]
+             [{:event-type :points-deposited
+               :player-id  player-id
+               :amount     amount}])
 
-(s/defmethod execute-command PlaceWager
+(s/defmethod execute-command :place-wager
              [{:keys [player-id bankroll] :as player} :- Player
-              {:keys [wager-id amount odds] :as command} :- PlaceWager]
+              {:keys [wager-id amount odds] :as command} :- c/PlaceWager]
              (if (<= amount bankroll)
-               [(e/map->WagerPlaced {:player-id player-id
-                                     :wager-id  wager-id
-                                     :amount    amount
-                                     :odds      odds})]
-               [(e/map->OverdrawAttempted {:player-id player-id
-                                           :wager-id  wager-id})]))
+               [{:event-type :wager-placed
+                 :player-id  player-id
+                 :wager-id   wager-id
+                 :amount     amount
+                 :odds       odds}]
+               [{:event-type :overdraw-attempted
+                 :player-id  player-id
+                 :wager-id   wager-id}]))
 
-(s/defmethod execute-command WithdrawWager
+(s/defmethod execute-command :withdraw-wager
              [{:keys [player-id] :as player} :- Player
-              {:keys [wager-id] :as command} :- WithdrawWager]
+              {:keys [wager-id] :as command} :- c/WithdrawWager]
              (let [wager (find-open-wager player wager-id)]
                (if (:locked? wager)
-                 [(e/map->LockedWagerWithdrawAttempted {:player-id player-id
-                                                        :wager-id  wager-id})]
-                 [(e/map->WagerWithdrawn {:player-id player-id
-                                          :wager-id  wager-id})])))
+                 [{:event-type :locked-wager-withdraw-attempted
+                   :player-id  player-id
+                   :wager-id   wager-id}]
+                 [{:event-type :wager-withdrawn
+                   :player-id  player-id
+                   :wager-id   wager-id}])))
 
-(s/defmethod execute-command CancelWager
+(s/defmethod execute-command :cancel-wager
              [{:keys [player-id] :as player} :- Player
-              {:keys [wager-id] :as command} :- CancelWager]
-             [(e/map->WagerCancelled {:player-id player-id
-                                      :wager-id  wager-id})])
+              {:keys [wager-id] :as command} :- c/CancelWager]
+             [{:event-type :wager-cancelled
+               :player-id  player-id
+               :wager-id   wager-id}])
 
-(s/defmethod execute-command LockWager
+(s/defmethod execute-command :lock-wager
              [{:keys [player-id] :as player} :- Player
-              {:keys [wager-id] :as command} :- LockWager]
-             [(e/map->WagerLocked {:player-id player-id
-                                   :wager-id  wager-id})])
+              {:keys [wager-id] :as command} :- c/LockWager]
+             [{:event-type :wager-locked
+               :player-id  player-id
+               :wager-id   wager-id}])
 
-(s/defmethod execute-command CloseWonWager
+(s/defmethod execute-command :close-won-wager
              [{:keys [player-id] :as player} :- Player
-              {:keys [wager-id] :as command} :- CloseWonWager]
+              {:keys [wager-id] :as command} :- c/CloseWonWager]
              (let [{:keys [amount odds] :as wager} (find-open-wager player wager-id)]
-               [(e/map->WagerWon {:player-id player-id
-                                  :wager-id  wager-id})
-                (e/map->WinningsEarned {:player-id player-id
-                                        :amount    (* odds amount)})]))
+               [{:event-type :wager-won
+                 :player-id  player-id
+                 :wager-id   wager-id}
+                {:event-type :winnings-earned
+                 :player-id  player-id
+                 :amount     (* odds amount)}]))
 
-(s/defmethod execute-command ClosePushedWager
+(s/defmethod execute-command :close-pushed-wager
              [{:keys [player-id] :as player} :- Player
-              {:keys [wager-id] :as command} :- ClosePushedWager]
+              {:keys [wager-id] :as command} :- c/ClosePushedWager]
              (let [wager (find-open-wager player wager-id)]
-               [(e/map->WagerPushed {:player-id player-id
-                                     :wager-id  wager-id})
-                (e/map->WinningsEarned {:player-id player-id
-                                        :amount    (:amount wager)})]))
+               [{:event-type :wager-pushed
+                 :player-id  player-id
+                 :wager-id   wager-id}
+                {:event-type :winnings-earned
+                 :player-id  player-id
+                 :amount     (:amount wager)}]))
 
-(s/defmethod execute-command CloseLostWager
+(s/defmethod execute-command :close-lost-wager
              [{:keys [player-id] :as player} :- Player
-              {:keys [wager-id] :as command} :- CloseLostWager]
-             [(e/map->WagerLost {:player-id player-id
-                                 :wager-id  wager-id})])
+              {:keys [wager-id] :as command} :- c/CloseLostWager]
+             [{:event-type :wager-lost
+               :player-id  player-id
+               :wager-id   wager-id}])
