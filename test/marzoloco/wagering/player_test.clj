@@ -1,8 +1,6 @@
 (ns marzoloco.wagering.player-test
   (:require [clojure.test :refer :all]
             [marzoloco.wagering.player :refer :all]
-            [marzoloco.wagering.events :as e]
-            [marzoloco.wagering.commands :as c]
             [schema.test]))
 
 (use-fixtures :once schema.test/validate-schemas)
