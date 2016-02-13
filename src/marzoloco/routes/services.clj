@@ -3,13 +3,16 @@
             [compojure.api.sweet :refer :all]
             [schema.core :as s]
             [marzoloco.wagering.commands :as c]
-            [marzoloco.wagering.player :as p]))
+            [marzoloco.event-store :as es]
+            [marzoloco.wagering.command-handler :as ch]))
 
 (s/defschema Thingie {:id    Long
                       :hot   Boolean
                       :tag   (s/enum :kikka :kukka)
                       :chief [{:name String
                                :type #{{:id String}}}]})
+
+(def event-store (es/make-in-memory-event-store))
 
 (defapi service-routes
         (ring.swagger.ui/swagger-ui
@@ -24,10 +27,12 @@
                   (POST* "/deposit-points" []
                          :body [cmd c/DepositPoints]
                          :summary "Deposit points into the player's bankroll"
-                         (ok (let [{player-id :player-id} cmd
-                                   player (p/map->Player {:player-id player-id
-                                                          :bankroll  23})]
-                               (p/execute-command player cmd)))))
+                         (ok (ch/handle-command event-store cmd)))
+
+                  (POST* "/place-wager" []
+                         :body [cmd c/PlaceWager]
+                         :summary "Place a Wager"
+                         (ok (ch/handle-command event-store cmd))))
 
         (context* "/api" []
                   :tags ["z sample - thingie"]
