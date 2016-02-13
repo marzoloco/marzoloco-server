@@ -32,6 +32,36 @@
                   (POST* "/place-wager" []
                          :body [cmd c/PlaceWager]
                          :summary "Place a Wager"
+                         (ok (ch/handle-command event-store cmd)))
+
+                  (POST* "/withdraw-wager" []
+                         :body [cmd c/WithdrawWager]
+                         :summary "Withdraw a Wager if it has not been locked"
+                         (ok (ch/handle-command event-store cmd)))
+
+                  (POST* "/cancel-wager" []
+                         :body [cmd c/CancelWager]
+                         :summary "Cancel a Wager"
+                         (ok (ch/handle-command event-store cmd)))
+
+                  (POST* "/lock-wager" []
+                         :body [cmd c/LockWager]
+                         :summary "Lock down a Wager so that it cannot be withdrawn"
+                         (ok (ch/handle-command event-store cmd)))
+
+                  (POST* "/close-won-wager" []
+                         :body [cmd c/CloseWonWager]
+                         :summary "Close out a Wager that has been won by the Player"
+                         (ok (ch/handle-command event-store cmd)))
+
+                  (POST* "/close-pushed-wager" []
+                         :body [cmd c/ClosePushedWager]
+                         :summary "Close out a Wager that is a push for the Player"
+                         (ok (ch/handle-command event-store cmd)))
+
+                  (POST* "/close-lost-wager" []
+                         :body [cmd c/CloseLostWager]
+                         :summary "Close out a Wager that has been Lost by the Player"
                          (ok (ch/handle-command event-store cmd))))
 
         (context* "/api" []
