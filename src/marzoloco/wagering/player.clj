@@ -1,10 +1,10 @@
 (ns marzoloco.wagering.player
   (:require [schema.core :as s]
             [marzoloco.wagering.events :as e]
-            [marzoloco.wagering.commands])
+            [marzoloco.wagering.commands :as c])
   (:import (marzoloco.wagering.events PointsDeposited WagerPlaced WagerWithdrawn WagerCancelled
                                       WagerLocked WagerWon WagerPushed WagerLost WinningsEarned)
-           (marzoloco.wagering.commands DepositPoints PlaceWager WithdrawWager CancelWager LockWager
+           (marzoloco.wagering.commands  PlaceWager WithdrawWager CancelWager LockWager
                                         CloseWonWager ClosePushedWager CloseLostWager)))
 
 
@@ -100,13 +100,13 @@
              player)
 
 
-(defn dispatch-execute-command [player command] (class command))
+(defn dispatch-execute-command [player command] (:command-type command))
 
 (defmulti execute-command #'dispatch-execute-command)
 
-(s/defmethod execute-command DepositPoints
+(s/defmethod execute-command :deposit-points
              [{:keys [player-id] :as player} :- Player
-              {:keys [amount] :as command} :- DepositPoints]
+              {:keys [amount] :as command} :- c/DepositPoints]
              [(e/map->PointsDeposited {:player-id player-id
                                        :amount    amount})])
 

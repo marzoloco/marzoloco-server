@@ -1,7 +1,9 @@
 (ns marzoloco.routes.services
   (:require [ring.util.http-response :refer :all]
             [compojure.api.sweet :refer :all]
-            [schema.core :as s]))
+            [schema.core :as s]
+            [marzoloco.wagering.commands :as c]
+            [marzoloco.wagering.player :as p]))
 
 (s/defschema Thingie {:id    Long
                       :hot   Boolean
@@ -14,9 +16,24 @@
           "/swagger-ui")
         ;JSON docs available at the /swagger.json route
         (swagger-docs
-          {:info {:title "Sample api"}})
+          {:info {:title "marzoloco-server api"}})
+
+        (context* "/wagering/player" []
+                  :tags ["Wagering context, Player aggregate"]
+
+                  (POST* "/echo" []
+                         :return (s/maybe Thingie)
+                         :body [thingie (s/maybe Thingie)]
+                         :summary "echoes a Thingie from json-body"
+                         (ok thingie))
+
+                  (POST* "/depositPoints" []
+                         :body [cmd c/DepositPoints]
+                         :summary "executes the DepositPoints command on the Player aggregate"
+                         (ok (p/execute-command (p/map->Player {:player-id (:player-id cmd)}) cmd))))
+
         (context* "/api" []
-                  :tags ["thingie"]
+                  :tags ["sample - thingie"]
 
                   (GET* "/plus" []
                         :return Long
@@ -61,7 +78,7 @@
                          (ok thingie)))
 
         (context* "/context" []
-                  :tags ["context*"]
+                  :tags ["sample - context*"]
                   :summary "summary inherited from context"
                   (context* "/:kikka" []
                             :path-params [kikka :- s/Str]

@@ -4,9 +4,10 @@
 ;; should there be a Wager value "object" here that is used by most commands?
 ;; I don't think so, because only the PlaceWager command needs the verbose Wager description
 
-(s/defrecord DepositPoints
-  [player-id :- s/Uuid
-   amount :- BigDecimal])
+(s/defschema DepositPoints
+  {:command-type (s/eq :deposit-points)
+   :player-id    s/Uuid
+   :amount       s/Num})
 
 (s/defrecord PlaceWager
   [player-id :- s/Uuid
