@@ -18,22 +18,19 @@
         (swagger-docs
           {:info {:title "marzoloco-server api"}})
 
-        (context* "/wagering/player" []
-                  :tags ["Wagering context, Player aggregate"]
+        (context* "/wagering/player/command" []
+                  :tags ["Execute commands against a Player in the Wagering context"]
 
-                  (POST* "/echo" []
-                         :return (s/maybe Thingie)
-                         :body [thingie (s/maybe Thingie)]
-                         :summary "echoes a Thingie from json-body"
-                         (ok thingie))
-
-                  (POST* "/depositPoints" []
+                  (POST* "/deposit-points" []
                          :body [cmd c/DepositPoints]
-                         :summary "executes the DepositPoints command on the Player aggregate"
-                         (ok (p/execute-command (p/map->Player {:player-id (:player-id cmd)}) cmd))))
+                         :summary "Deposit points into the player's bankroll"
+                         (ok (let [{player-id :player-id} cmd
+                                   player (p/map->Player {:player-id player-id
+                                                          :bankroll  23})]
+                               (p/execute-command player cmd)))))
 
         (context* "/api" []
-                  :tags ["sample - thingie"]
+                  :tags ["z sample - thingie"]
 
                   (GET* "/plus" []
                         :return Long
@@ -78,7 +75,7 @@
                          (ok thingie)))
 
         (context* "/context" []
-                  :tags ["sample - context*"]
+                  :tags ["z sample - context*"]
                   :summary "summary inherited from context"
                   (context* "/:kikka" []
                             :path-params [kikka :- s/Str]
