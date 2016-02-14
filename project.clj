@@ -6,6 +6,7 @@
 
   :dependencies [[org.clojure/clojure "1.8.0"]
                  [prismatic/schema "1.0.4"]
+                 [com.rpl/specter "0.9.2"]
                  [selmer "1.0.0"]
                  [markdown-clj "0.9.85"]
                  [luminus/config "0.5"]
