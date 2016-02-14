@@ -5,10 +5,10 @@
             [marzoloco.event-store :as es]))
 
 ;;
-;; Consuming all player-related events to build a
-;; read model showing info for all players.
+;; Consuming all player-related events to build a read model showing info for all players.
+;; The apply-event functions build up a map of players, keyed by the player-id.
 ;;
-;; Gonna start out with no schema constraints, see hot it goes.
+;; Gonna start out with no schema constraints, see how it goes.
 ;;
 ;; Also gonna try out REPL-driven development here, rather than TDD.
 ;;
@@ -16,18 +16,15 @@
 
 (defn make-initial-player
   [player-id]
-  {:player-id   player-id
-   :bankroll    0
-   :open-wagers #{}
-   :winnings    0})
+  {:player-id player-id
+   :bankroll  0
+   :wagers    #{}
+   :winnings  0})
 
 
-(defn remove-open-wager [player-id wager-id players]
-  (transform [(keypath player-id)
-              (collect-one [:open-wagers ALL #(= (:wager-id %) wager-id)])
-              :open-wagers]
-             #(disj %2 %1) players))
-
+(defn wager-status-navigator
+  [player-id wager-id]
+  [(keypath player-id) :wagers ALL #(= (:wager-id %) wager-id) :status])
 
 (defn dispatch-apply-event [players event] (:event-type event))
 
@@ -46,10 +43,12 @@
 (s/defmethod apply-event :wager-placed
   [players
    {:keys [player-id amount] :as event} :- we/WagerPlaced]
-  (let [open-wager (select-keys event [:wager-id :amount :odds])]
+  (let [wager (-> event
+                  (select-keys [:wager-id :amount :odds])
+                  (assoc :status :placed))]
     (->> players
          (transform [(keypath player-id) :bankroll] #(- % amount))
-         (transform [(keypath player-id) :open-wagers] #(conj % open-wager)))))
+         (transform [(keypath player-id) :wagers] #(conj % wager)))))
 
 (s/defmethod apply-event :overdraw-attempted
   [players event :- we/OverdrawAttempted]
@@ -60,48 +59,45 @@
    {:keys [player-id wager-id] :as event} :- we/WagerWithdrawn]
   (->> players
        (transform [(keypath player-id)
-                   (collect-one [:open-wagers ALL #(= (:wager-id %) wager-id) :amount])
+                   (collect-one [:wagers ALL #(= (:wager-id %) wager-id) :amount])
                    :bankroll]
                   +)
-       (remove-open-wager player-id wager-id)))
+       (setval (wager-status-navigator player-id wager-id) :withdrawn)))
 
 (s/defmethod apply-event :locked-wager-withdraw-attempted
-  [players event :- we/OverdrawAttempted]
+  [players event :- we/LockedWagerWithdrawAttempted]
   players)
 
 (s/defmethod apply-event :wager-cancelled
   [players
-   {:keys [player-id wager-id] :as event} :- we/WagerWithdrawn]
+   {:keys [player-id wager-id] :as event} :- we/WagerCancelled]
   (->> players
        (transform [(keypath player-id)
-                   (collect-one [:open-wagers ALL #(= (:wager-id %) wager-id) :amount])
+                   (collect-one [:wagers ALL #(= (:wager-id %) wager-id) :amount])
                    :bankroll]
                   +)
-       (transform [(keypath player-id)
-                   (collect-one [:open-wagers ALL #(= (:wager-id %) wager-id)])
-                   :open-wagers]
-                  #(disj %2 %1))))
+       (setval (wager-status-navigator player-id wager-id) :cancelled)))
 
 (s/defmethod apply-event :wager-locked
   [players
    {:keys [player-id wager-id] :as event} :- we/WagerLocked]
   (->> players
-       (setval [(keypath player-id) :open-wagers ALL #(= (:wager-id %) wager-id) :locked?] true)))
+       (setval (wager-status-navigator player-id wager-id) :locked)))
 
 (s/defmethod apply-event :wager-won
   [players
    {:keys [player-id wager-id] :as event} :- we/WagerWon]
-  (remove-open-wager player-id wager-id players))
+  (setval (wager-status-navigator player-id wager-id) :won players))
 
 (s/defmethod apply-event :wager-pushed
   [players
-   {:keys [player-id wager-id] :as event} :- we/WagerWon]
-  (remove-open-wager player-id wager-id players))
+   {:keys [player-id wager-id] :as event} :- we/WagerPushed]
+  (setval (wager-status-navigator player-id wager-id) :pushed players))
 
 (s/defmethod apply-event :wager-lost
   [players
-   {:keys [player-id wager-id] :as event} :- we/WagerWon]
-  (remove-open-wager player-id wager-id players))
+   {:keys [player-id wager-id] :as event} :- we/WagerLost]
+  (setval (wager-status-navigator player-id wager-id) :lost players))
 
 (s/defmethod apply-event :winnings-earned
   [players
