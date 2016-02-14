@@ -1,0 +1,5 @@
+deployment:
+  staging:
+    branch: luminus-server
+    heroku:
+      appname: marzoloco-server
