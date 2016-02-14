@@ -4,7 +4,8 @@
             [schema.core :as s]
             [marzoloco.wagering.commands :as c]
             [marzoloco.event-store :as es]
-            [marzoloco.wagering.command-handler :as ch]))
+            [marzoloco.wagering.command-handler :as ch]
+            [marzoloco.read.players :as rp]))
 
 (s/defschema Thingie {:id    Long
                       :hot   Boolean
@@ -20,6 +21,18 @@
         ;JSON docs available at the /swagger.json route
         (swagger-docs
           {:info {:title "marzoloco-server API"}})
+
+        (context* "/players" []
+                  :tags ["Players read model"]
+
+                  (GET* "/" []
+                        :summary "Get all Players"
+                        (ok (rp/get-players event-store)))
+
+                  (GET* "/:player-id" []
+                        :summary "Get Player by id"
+                        :path-params [player-id :- s/Uuid]
+                        (ok (rp/get-player event-store player-id))))
 
         (context* "/wagering/player" []
                   :tags ["Wagering context, Player commands"]
