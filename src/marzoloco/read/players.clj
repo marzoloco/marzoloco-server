@@ -18,7 +18,8 @@
   [player-id]
   {:player-id   player-id
    :bankroll    0
-   :open-wagers #{}})
+   :open-wagers #{}
+   :winnings    0})
 
 
 (defn remove-open-wager [player-id wager-id players]
@@ -103,8 +104,10 @@
   (remove-open-wager player-id wager-id players))
 
 (s/defmethod apply-event :winnings-earned
-  [players event :- we/WinningsEarned]
-  players)
+  [players
+   {:keys [player-id amount] :as event} :- we/WinningsEarned]
+  (->> players
+       (transform [(keypath player-id) :winnings] #(+ % amount))))
 
 
 (defn make-players
