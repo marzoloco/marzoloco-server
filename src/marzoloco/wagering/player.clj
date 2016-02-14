@@ -46,6 +46,10 @@
                    (update-in [:bankroll] - amount)
                    (update-in [:open-wagers] conj wager))))
 
+(s/defmethod apply-event :overdraw-attempted
+             [player event]
+             player)
+
 (s/defmethod apply-event :wager-withdrawn
              [player :- Player
               {:keys [wager-id] :as event} :- e/WagerWithdrawn]
@@ -53,6 +57,10 @@
                (-> player
                    (update-in [:bankroll] + (:amount wager))
                    (remove-open-wager wager-id))))
+
+(s/defmethod apply-event :locked-wager-withdraw-attempted
+             [player event]
+             player)
 
 (s/defmethod apply-event :wager-cancelled
              [player :- Player
