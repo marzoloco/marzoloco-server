@@ -1,7 +1,8 @@
 (ns marzoloco.read.players
   (:require [schema.core :as s]
+            [com.rpl.specter :refer :all]
             [marzoloco.wagering.events :as we]
-            [com.rpl.specter :refer :all]))
+            [marzoloco.event-store :as es]))
 
 ;;
 ;; Consuming all player-related events to build a
@@ -43,7 +44,7 @@
 
 (s/defmethod apply-event :wager-placed
              [players
-              {:keys [amount] :as event} :- we/WagerPlaced]
+              {:keys [player-id amount] :as event} :- we/WagerPlaced]
              (let [open-wager (select-keys event [:wager-id :amount :odds])]
                (->> players
                     (transform [(keypath player-id) :bankroll] #(- % amount))
@@ -104,3 +105,24 @@
 (s/defmethod apply-event :winnings-earned
              [players event :- we/WinningsEarned]
              players)
+
+
+(defn make-players
+  [events]
+  (reduce apply-event {} events))
+
+(defn get-players
+  [event-store]
+  (->> event-store
+       es/get-all-events
+       make-players
+       vals))
+
+(defn get-player
+  [event-store player-id]
+  (->> event-store
+       es/get-all-events
+       (filter #(= (:player-id %) player-id))
+       make-players
+       vals
+       first))
