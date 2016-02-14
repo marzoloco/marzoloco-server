@@ -13,3 +13,8 @@ pom.xml.asc
 profiles.clj
 /.env
 *.log
+
+!/.idea
+/.idea/*
+!/.idea/codeStyleSettings.xml
+
