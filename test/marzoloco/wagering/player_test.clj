@@ -45,6 +45,27 @@
         actual-player (apply-event initial-player wager-placed-event)]
     (is (= expected-player actual-player))))
 
+(deftest apply-noop-events
+  (let [player-id (uuid)
+        initial-player (map->Player {:player-id   player-id
+                                     :open-wagers #{(map->Wager {:wager-id (uuid)
+                                                                 :amount   12.34
+                                                                 :odds     2.0 :locked? false})}
+                                     :bankroll    5})
+        expected-player initial-player]
+    (testing "applying OverdrawAttempted event is a no-op"
+      (let [overdrawAttempted-event {:event-type :overdraw-attempted
+                                     :player-id  player-id
+                                     :wager-id   (uuid)}
+            actual-player (apply-event initial-player overdrawAttempted-event)]
+        (is (= expected-player actual-player))))
+    (testing "applying LockedWagerWithdrawAttempted event is a no-op"
+      (let [lockedWagerWithdrawAttempted-event {:event-type :locked-wager-withdraw-attempted
+                                                :player-id  player-id
+                                                :wager-id   (uuid)}
+            actual-player (apply-event initial-player lockedWagerWithdrawAttempted-event)]
+        (is (= expected-player actual-player))))))
+
 (deftest apply-WagerWithdrawnCancelled-event
   (let [player-id (uuid)
         initial-bankroll 150.0
