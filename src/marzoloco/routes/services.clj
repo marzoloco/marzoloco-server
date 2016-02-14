@@ -19,10 +19,10 @@
           "/swagger-ui")
         ;JSON docs available at the /swagger.json route
         (swagger-docs
-          {:info {:title "marzoloco-server api"}})
+          {:info {:title "marzoloco-server API"}})
 
-        (context* "/wagering/player/command" []
-                  :tags ["Execute commands against a Player in the Wagering context"]
+        (context* "/wagering/player" []
+                  :tags ["Wagering context, Player commands"]
 
                   (POST* "/deposit-points" []
                          :body [cmd c/DepositPoints]
