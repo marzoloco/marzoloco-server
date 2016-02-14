@@ -1,6 +1,7 @@
 (ns marzoloco.read.players
   (:require [schema.core :as s]
-            [marzoloco.wagering.events :as we]))
+            [marzoloco.wagering.events :as we]
+            [com.rpl.specter :refer :all]))
 
 ;;
 ;; Consuming all player-related events to build a
@@ -26,7 +27,7 @@
               {:keys [player-id amount] :as event} :- we/PointsDeposited]
              ;; For now, this applier takes on the task of initializing the player. Eventually
              ;; we'll have an explicit event for this coming from some context other than Wagering.
-             (let [{player player-id :or {player (make-initial-player player-id)}} players
-                   updated-player (-> player
-                                      (update-in [:bankroll] + amount))]
-               (assoc players player-id updated-player)))
+             (let [seeded-players (if (contains? players player-id)
+                                    players
+                                    (assoc players player-id (make-initial-player player-id)))]
+               (transform [(keypath player-id) :bankroll (putval amount)] + seeded-players)))
