@@ -25,6 +25,27 @@
         actual-board (apply-event initial-board game-posted-event)]
     (is (= expected-board actual-board))))
 
+(deftest apply-BetPosted-event
+  (let [board-id (uuid) game-id (uuid) bet-id (uuid)
+        initial-board (map->Board {:board-id board-id
+                                   :games    {game-id {:game-id game-id
+                                                       :bets    {}}}})
+        bet-posted-event {:event-type :bet-posted
+                          :board-id   board-id
+                          :game-id    game-id
+                          :bet        {:bet-id        bet-id
+                                       :bet-type      :spread-bet
+                                       :favorite-side :team-a
+                                       :spread        13}}
+        expected-bet (map->SpreadBet {:bet-id        bet-id
+                                      :bet-type      :spread-bet
+                                      :favorite-side :team-a
+                                      :spread        13})
+        expected-board (map->Board {:board-id board-id
+                                    :games    {game-id {:game-id game-id
+                                                        :bets    {bet-id expected-bet}}}})
+        actual-board (apply-event initial-board bet-posted-event)]
+    (is (= expected-board actual-board))))
 
 
 (deftest execute-PostGame-command

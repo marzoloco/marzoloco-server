@@ -19,7 +19,18 @@
                  team-b-name
                  bets])
 
-(defrecord Bet [bet-id])
+(defrecord SpreadBet [bet-id
+                      bet-type
+                      favorite-side
+                      spread])
+
+(defrecord TotalBet [bet-id
+                     bet-type
+                     over-under])
+
+(defrecord PropBet [bet-id
+                    bet-type
+                    over-under])
 
 
 (defn dispatch-apply-event [board event] (:event-type event))
@@ -34,6 +45,22 @@
                          :team-b-name team-b-name})]
     (-> board
         (update-in [:games] assoc :game-id game))))
+
+(s/defmethod apply-event :bet-posted
+  [board :- Board
+   {:keys [game-id bet] :as event} :- e/BetPosted]
+  ;; TODO return BetPostedForUnknownGame event
+  (let [bet-id (:bet-id bet)
+        bet-type (:bet-type bet)
+        bet (merge (case bet-type
+                     :spread-bet (map->SpreadBet {:favorite-side (:favorite-side bet)
+                                                  :spread        (:spread bet)})
+                     :total-bet (map->TotalBet {:over-under (:over-under bet)})
+                     :prop-bet (map->PropBet {:over-under (:over-under bet)}))
+                   {:bet-id   bet-id
+                    :bet-type bet-type})]
+    (->> board
+         (transform [:games (keypath game-id) :bets] #(assoc % bet-id bet)))))
 
 
 (defn dispatch-execute-command [board command] (:command-type command))
