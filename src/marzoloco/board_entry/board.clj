@@ -15,6 +15,8 @@
                   games])
 
 (defrecord Game [game-id
+                 team-a-name
+                 team-b-name
                  bets])
 
 (defrecord Bet [bet-id])
@@ -26,10 +28,12 @@
 
 (s/defmethod apply-event :game-posted
   [board :- Board
-   {:keys [game-id] :as event} :- e/GamePosted]
-  (let [game (map->Game {:game-id game-id})]
+   {:keys [game-id team-a-name team-b-name] :as event} :- e/GamePosted]
+  (let [game (map->Game {:game-id     game-id
+                         :team-a-name team-a-name
+                         :team-b-name team-b-name})]
     (-> board
-        (update-in [:games] conj game))))
+        (update-in [:games] assoc :game-id game))))
 
 
 (defn dispatch-execute-command [board command] (:command-type command))
@@ -38,7 +42,12 @@
 
 (s/defmethod execute-command :post-game
   [{:keys [board-id] :as board} :- Board
-   {:keys [game-id] :as command} :- c/PostGame]
-  [{:event-type :game-posted
-    :board-id   board-id
-    :game-id    game-id}])
+   {:keys [game-id team-a-name team-b-name] :as command} :- c/PostGame]
+  [{:event-type  :game-posted
+    :board-id    board-id
+    :game-id     game-id
+    :team-a-name team-a-name
+    :team-b-name team-b-name}])
+
+
+

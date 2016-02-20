@@ -9,16 +9,19 @@
 
 
 (deftest apply-GamePosted-event
-  (let [board-id (uuid)
-        game-id (uuid)
+  (let [board-id (uuid) game-id (uuid) team-a-name "Butler" team-b-name "Syracuse"
         initial-board (map->Board {:board-id board-id
-                                   :games    []})
-        game-posted-event {:event-type :game-posted
-                           :board-id   board-id
-                           :game-id    game-id}
-        expected-game (map->Game {:game-id game-id})
+                                   :games    {}})
+        game-posted-event {:event-type  :game-posted
+                           :board-id    board-id
+                           :game-id     game-id
+                           :team-a-name team-a-name
+                           :team-b-name team-b-name}
+        expected-game (map->Game {:game-id     game-id
+                                  :team-a-name team-a-name
+                                  :team-b-name team-b-name})
         expected-board (map->Board {:board-id board-id
-                                    :games    [expected-game]})
+                                    :games    {:game-id expected-game}})
         actual-board (apply-event initial-board game-posted-event)]
     (is (= expected-board actual-board))))
 
@@ -27,14 +30,20 @@
 (deftest execute-PostGame-command
   (let [board-id (uuid)
         game-id (uuid)
+        team-a-name "Butler"
+        team-b-name "Syracuse"
         board (map->Board {:board-id board-id
                            :games    []})]
     (testing "PostGame -> GamePosted"
       (let [postGame-cmd {:command-type :post-game
                           :board-id     board-id
-                          :game-id      game-id}
-            expected-events [{:event-type :game-posted
-                              :board-id   board-id
-                              :game-id    game-id}]
+                          :game-id      game-id
+                          :team-a-name  team-a-name
+                          :team-b-name  team-b-name}
+            expected-events [{:event-type  :game-posted
+                              :board-id    board-id
+                              :game-id     game-id
+                              :team-a-name team-a-name
+                              :team-b-name team-b-name}]
             actual-events (execute-command board postGame-cmd)]
         (is (= expected-events actual-events))))))
