@@ -15,11 +15,17 @@
   (let [event-store (es/make-in-memory-event-store)
         board-id (uuid)
         game-id (uuid)
+        team-a-name "Butler"
+        team-b-name "Syracuse"
         cmd {:command-type :post-game
              :board-id     board-id
-             :game-id      game-id}
-        expected-stored-events [{:event-type :game-posted
-                                 :board-id   board-id
-                                 :game-id    game-id}]]
+             :game-id      game-id
+             :team-a-name  team-a-name
+             :team-b-name  team-b-name}
+        expected-stored-events [{:event-type  :game-posted
+                                 :board-id    board-id
+                                 :game-id     game-id
+                                 :team-a-name team-a-name
+                                 :team-b-name team-b-name}]]
     (handle-command event-store cmd)
     (is (= expected-stored-events (es/get-all-events event-store)))))
