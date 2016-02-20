@@ -11,7 +11,7 @@
 (defn uuid [] (java.util.UUID/randomUUID))
 
 
-(deftest handle-PostCame-command
+(deftest handle-PostGame-command
   (let [event-store (es/make-in-memory-event-store)
         board-id (uuid)
         game-id (uuid)
