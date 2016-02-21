@@ -27,6 +27,7 @@
 
 (deftest apply-BetPosted-event
   (let [board-id (uuid) game-id (uuid) bet-id (uuid)
+        spread 13
         initial-board (map->Board {:board-id board-id
                                    :games    {game-id {:game-id game-id
                                                        :bets    {}}}})
@@ -36,11 +37,11 @@
                           :bet        {:bet-id        bet-id
                                        :bet-type      :spread-bet
                                        :favorite-side :team-a
-                                       :spread        13}}
+                                       :spread        spread}}
         expected-bet (map->SpreadBet {:bet-id        bet-id
                                       :bet-type      :spread-bet
                                       :favorite-side :team-a
-                                      :spread        13})
+                                      :spread        spread})
         expected-board (map->Board {:board-id board-id
                                     :games    {game-id {:game-id game-id
                                                         :bets    {bet-id expected-bet}}}})
@@ -49,12 +50,10 @@
 
 
 (deftest execute-PostGame-command
-  (let [board-id (uuid)
-        game-id (uuid)
-        team-a-name "Butler"
-        team-b-name "Syracuse"
+  (let [board-id (uuid) game-id (uuid)
+        team-a-name "Butler" team-b-name "Syracuse"
         board (map->Board {:board-id board-id
-                           :games    []})]
+                           :games    {}})]
     (testing "PostGame -> GamePosted"
       (let [postGame-cmd {:command-type :post-game
                           :board-id     board-id
