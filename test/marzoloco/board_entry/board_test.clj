@@ -67,3 +67,27 @@
                               :team-b-name team-b-name}]
             actual-events (execute-command board postGame-cmd)]
         (is (= expected-events actual-events))))))
+
+(deftest execute-PostBet-command
+  (let [board-id (uuid) game-id (uuid) bet-id (uuid)
+        board (map->Board {:board-id board-id
+                           :games    {game-id {:game-id game-id
+                                               :bets    {}}}})]
+    (testing "PostBet SpreadBet -> BetPosted"
+      (let [bet-type :spread-bet favorite-side :team-a spread 13
+            postBet-cmd {:command-type :post-bet
+                         :board-id     board-id
+                         :game-id      game-id
+                         :bet          {:bet-id        bet-id
+                                        :bet-type      bet-type
+                                        :favorite-side favorite-side
+                                        :spread        spread}}
+            expected-events [{:event-type :bet-posted
+                              :board-id   board-id
+                              :game-id    game-id
+                              :bet        {:bet-id        bet-id
+                                           :bet-type      bet-type
+                                           :favorite-side favorite-side
+                                           :spread        spread}}]
+            actual-events (execute-command board postBet-cmd)]
+        (is (= expected-events actual-events))))))

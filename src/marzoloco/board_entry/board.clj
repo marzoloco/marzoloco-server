@@ -76,5 +76,15 @@
     :team-a-name team-a-name
     :team-b-name team-b-name}])
 
+(s/defmethod execute-command :post-bet
+  [{:keys [board-id] :as board} :- Board
+   {:keys [game-id bet] :as command} :- c/PostBet]
+  [{:event-type :bet-posted
+    :board-id   board-id
+    :game-id    game-id
+    :bet        {:bet-id        (:bet-id bet)
+                 :bet-type      :spread-bet
+                 :favorite-side (:favorite-side bet)
+                 :spread        (:spread bet)}}])
 
 
