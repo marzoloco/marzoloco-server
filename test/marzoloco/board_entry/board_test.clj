@@ -27,6 +27,7 @@
 
 (deftest apply-BetPosted-event
   (let [board-id (uuid) game-id (uuid) bet-id (uuid)
+        favorite-side :team-a
         spread 13
         initial-board (map->Board {:board-id board-id
                                    :games    {game-id {:game-id game-id
@@ -36,11 +37,11 @@
                           :game-id    game-id
                           :bet        {:bet-id        bet-id
                                        :bet-type      :spread-bet
-                                       :favorite-side :team-a
+                                       :favorite-side favorite-side
                                        :spread        spread}}
         expected-bet (map->SpreadBet {:bet-id        bet-id
                                       :bet-type      :spread-bet
-                                      :favorite-side :team-a
+                                      :favorite-side favorite-side
                                       :spread        spread})
         expected-board (map->Board {:board-id board-id
                                     :games    {game-id {:game-id game-id
@@ -51,7 +52,8 @@
 
 (deftest execute-PostGame-command
   (let [board-id (uuid) game-id (uuid)
-        team-a-name "Butler" team-b-name "Syracuse"
+        team-a-name "Butler"
+        team-b-name "Syracuse"
         board (map->Board {:board-id board-id
                            :games    {}})]
     (testing "PostGame -> GamePosted"
@@ -73,8 +75,10 @@
         board (map->Board {:board-id board-id
                            :games    {game-id {:game-id game-id
                                                :bets    {}}}})]
-    (testing "PostBet SpreadBet -> BetPosted"
-      (let [bet-type :spread-bet favorite-side :team-a spread 13
+    (testing "PostBet,SpreadBet -> BetPosted"
+      (let [bet-type :spread-bet
+            favorite-side :team-a
+            spread 13
             postBet-cmd {:command-type :post-bet
                          :board-id     board-id
                          :game-id      game-id
@@ -89,5 +93,39 @@
                                            :bet-type      bet-type
                                            :favorite-side favorite-side
                                            :spread        spread}}]
+            actual-events (execute-command board postBet-cmd)]
+        (is (= expected-events actual-events))))
+    (testing "PostBet,TotalBet -> BetPosted"
+      (let [bet-type :total-bet
+            over-under 13
+            postBet-cmd {:command-type :post-bet
+                         :board-id     board-id
+                         :game-id      game-id
+                         :bet          {:bet-id     bet-id
+                                        :bet-type   bet-type
+                                        :over-under over-under}}
+            expected-events [{:event-type :bet-posted
+                              :board-id   board-id
+                              :game-id    game-id
+                              :bet        {:bet-id     bet-id
+                                           :bet-type   bet-type
+                                           :over-under over-under}}]
+            actual-events (execute-command board postBet-cmd)]
+        (is (= expected-events actual-events))))
+    (testing "PostBet,PropBet -> BetPosted"
+      (let [bet-type :prop-bet
+            over-under 13
+            postBet-cmd {:command-type :post-bet
+                         :board-id     board-id
+                         :game-id      game-id
+                         :bet          {:bet-id     bet-id
+                                        :bet-type   bet-type
+                                        :over-under over-under}}
+            expected-events [{:event-type :bet-posted
+                              :board-id   board-id
+                              :game-id    game-id
+                              :bet        {:bet-id     bet-id
+                                           :bet-type   bet-type
+                                           :over-under over-under}}]
             actual-events (execute-command board postBet-cmd)]
         (is (= expected-events actual-events))))))

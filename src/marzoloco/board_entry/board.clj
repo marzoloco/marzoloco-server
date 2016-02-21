@@ -79,12 +79,14 @@
 (s/defmethod execute-command :post-bet
   [{:keys [board-id] :as board} :- Board
    {:keys [game-id bet] :as command} :- c/PostBet]
-  [{:event-type :bet-posted
-    :board-id   board-id
-    :game-id    game-id
-    :bet        {:bet-id        (:bet-id bet)
-                 :bet-type      :spread-bet
-                 :favorite-side (:favorite-side bet)
-                 :spread        (:spread bet)}}])
-
-
+  (let [{:keys [bet-id bet-type]} bet]
+    [{:event-type :bet-posted
+      :board-id   board-id
+      :game-id    game-id
+      :bet        (merge {:bet-id   bet-id
+                          :bet-type bet-type}
+                         (case bet-type
+                           :spread-bet {:favorite-side (:favorite-side bet)
+                                        :spread        (:spread bet)}
+                           :total-bet {:over-under (:over-under bet)}
+                           :prop-bet {:over-under (:over-under bet)}))}]))
