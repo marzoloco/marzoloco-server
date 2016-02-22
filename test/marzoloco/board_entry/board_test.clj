@@ -21,7 +21,7 @@
                                   :team-a-name team-a-name
                                   :team-b-name team-b-name})
         expected-board (map->Board {:board-id board-id
-                                    :games    {:game-id expected-game}})
+                                    :games    {game-id expected-game}})
         actual-board (apply-event initial-board game-posted-event)]
     (is (= expected-board actual-board))))
 

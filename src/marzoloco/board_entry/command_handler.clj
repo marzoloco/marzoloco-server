@@ -12,7 +12,7 @@
   [event-store {:keys [board-id] :as cmd}]
   (let [all-events (es/get-all-events event-store)
         board-events (filter #(= (:board-id %) board-id) all-events)
-        initial-board (b/->Board board-id [])
+        initial-board (b/map->Board {:board-id board-id :games {}})
         board-aggregate (reduce b/apply-event initial-board board-events)
         new-events (b/execute-command board-aggregate cmd)]
     (es/append-events event-store new-events)

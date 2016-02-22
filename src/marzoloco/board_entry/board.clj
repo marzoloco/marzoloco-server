@@ -44,7 +44,7 @@
                          :team-a-name team-a-name
                          :team-b-name team-b-name})]
     (-> board
-        (update-in [:games] assoc :game-id game))))
+        (update-in [:games] assoc game-id game))))
 
 (s/defmethod apply-event :bet-posted
   [board :- Board
