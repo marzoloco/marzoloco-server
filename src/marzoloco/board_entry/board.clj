@@ -21,7 +21,7 @@
 
 (defrecord SpreadBet [bet-id
                       bet-type
-                      favorite-side
+                      favorite
                       spread])
 
 (defrecord TotalBet [bet-id
@@ -53,8 +53,8 @@
   (let [bet-id (:bet-id bet)
         bet-type (:bet-type bet)
         bet (merge (case bet-type
-                     :spread-bet (map->SpreadBet {:favorite-side (:favorite-side bet)
-                                                  :spread        (:spread bet)})
+                     :spread-bet (map->SpreadBet {:favorite (:favorite bet)
+                                                  :spread   (:spread bet)})
                      :total-bet (map->TotalBet {:over-under (:over-under bet)})
                      :prop-bet (map->PropBet {:over-under (:over-under bet)}))
                    {:bet-id   bet-id
@@ -86,7 +86,7 @@
       :bet        (merge {:bet-id   bet-id
                           :bet-type bet-type}
                          (case bet-type
-                           :spread-bet {:favorite-side (:favorite-side bet)
-                                        :spread        (:spread bet)}
+                           :spread-bet {:favorite (:favorite bet)
+                                        :spread   (:spread bet)}
                            :total-bet {:over-under (:over-under bet)}
                            :prop-bet {:over-under (:over-under bet)}))}]))

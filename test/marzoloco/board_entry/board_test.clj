@@ -27,7 +27,7 @@
 
 (deftest apply-BetPosted-event
   (let [board-id (uuid) game-id (uuid) bet-id (uuid)
-        favorite-side :team-a
+        favorite :team-a
         spread 13
         initial-board (map->Board {:board-id board-id
                                    :games    {game-id {:game-id game-id
@@ -35,14 +35,14 @@
         bet-posted-event {:event-type :bet-posted
                           :board-id   board-id
                           :game-id    game-id
-                          :bet        {:bet-id        bet-id
-                                       :bet-type      :spread-bet
-                                       :favorite-side favorite-side
-                                       :spread        spread}}
-        expected-bet (map->SpreadBet {:bet-id        bet-id
-                                      :bet-type      :spread-bet
-                                      :favorite-side favorite-side
-                                      :spread        spread})
+                          :bet        {:bet-id   bet-id
+                                       :bet-type :spread-bet
+                                       :favorite favorite
+                                       :spread   spread}}
+        expected-bet (map->SpreadBet {:bet-id   bet-id
+                                      :bet-type :spread-bet
+                                      :favorite favorite
+                                      :spread   spread})
         expected-board (map->Board {:board-id board-id
                                     :games    {game-id {:game-id game-id
                                                         :bets    {bet-id expected-bet}}}})
@@ -77,22 +77,22 @@
                                                :bets    {}}}})]
     (testing "PostBet,SpreadBet -> BetPosted"
       (let [bet-type :spread-bet
-            favorite-side :team-a
+            favorite :team-a
             spread 13
             postBet-cmd {:command-type :post-bet
                          :board-id     board-id
                          :game-id      game-id
-                         :bet          {:bet-id        bet-id
-                                        :bet-type      bet-type
-                                        :favorite-side favorite-side
-                                        :spread        spread}}
+                         :bet          {:bet-id   bet-id
+                                        :bet-type bet-type
+                                        :favorite favorite
+                                        :spread   spread}}
             expected-events [{:event-type :bet-posted
                               :board-id   board-id
                               :game-id    game-id
-                              :bet        {:bet-id        bet-id
-                                           :bet-type      bet-type
-                                           :favorite-side favorite-side
-                                           :spread        spread}}]
+                              :bet        {:bet-id   bet-id
+                                           :bet-type bet-type
+                                           :favorite favorite
+                                           :spread   spread}}]
             actual-events (execute-command board postBet-cmd)]
         (is (= expected-events actual-events))))
     (testing "PostBet,TotalBet -> BetPosted"
