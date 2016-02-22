@@ -14,11 +14,11 @@
 
 (s/defschema TotalBet {:bet-id     s/Uuid
                        :bet-type   (s/eq :total-bet)
-                       :over-under s/Int})
+                       :over-under s/Num})
 
 (s/defschema PropBet {:bet-id     s/Uuid
                       :bet-type   (s/eq :prop-bet)
-                      :over-under s/Int})
+                      :over-under s/Num})
 
 (s/defschema PostBet {:command-type (s/eq :post-bet)
                       :board-id s/Uuid
