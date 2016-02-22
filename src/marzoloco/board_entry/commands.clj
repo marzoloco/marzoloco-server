@@ -21,6 +21,7 @@
                       :over-under s/Num})
 
 (s/defschema PostBet {:command-type (s/eq :post-bet)
-                      :board-id s/Uuid
-                      :game-id s/Uuid
-                      :bet (s/either SpreadBet TotalBet PropBet)})
+                      :board-id     s/Uuid
+                      :game-id      s/Uuid
+                      :bet          (s/either SpreadBet TotalBet PropBet)})
+
