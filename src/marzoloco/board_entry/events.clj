@@ -24,3 +24,17 @@
                         :board-id   s/Uuid
                         :game-id    s/Uuid
                         :bet        (s/either SpreadBet TotalBet PropBet)})
+
+(def Side (s/enum :favorite :underdog :over :under))
+
+(s/defschema SideWon {:event-type   (s/eq :side-won)
+                      :board-id     s/Uuid
+                      :game-id      s/Uuid
+                      :bet-id       s/Uuid
+                      :winning-side Side})
+
+(s/defschema SideLost {:event-type  (s/eq :side-lost)
+                       :board-id    s/Uuid
+                       :game-id     s/Uuid
+                       :bet-id      s/Uuid
+                       :losing-side Side})

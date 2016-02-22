@@ -129,3 +129,32 @@
                                            :over-under over-under}}]
             actual-events (execute-command board postBet-cmd)]
         (is (= expected-events actual-events))))))
+
+(deftest execute-DeclareWinners-command
+  (let [board-id (uuid) game-id (uuid)
+        bet-id (uuid) favorite :team-a spread 5
+        team-a-points 93 team-b-points 87
+        board (map->Board {:board-id board-id
+                           :games    {game-id {:game-id game-id
+                                               :bets    {bet-id {:bet-id   bet-id
+                                                                 :bet-type :spread-bet
+                                                                 :favorite favorite
+                                                                 :spread   spread}}}}})
+        declareWinners-cmd {:command-type  :declare-winners
+                            :board-id      board-id
+                            :game-id       game-id
+                            :team-a-points team-a-points
+                            :team-b-points team-b-points}
+        expected-events [{:event-type   :side-won
+                          :board-id     board-id
+                          :game-id      game-id
+                          :bet-id       bet-id
+                          :winning-side :favorite}
+                         {:event-type  :side-lost
+                          :board-id    board-id
+                          :game-id     game-id
+                          :bet-id      bet-id
+                          :losing-side :underdog}]
+        actual-events (execute-command board declareWinners-cmd)]
+    (is (= expected-events actual-events))
+    (testing "multiple bets of different kinds")))
