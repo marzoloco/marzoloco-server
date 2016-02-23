@@ -1,5 +1,6 @@
 (ns marzoloco.wagering.player
   (:require [schema.core :as s]
+            [com.rpl.specter :refer :all]
             [marzoloco.wagering.events :as e]
             [marzoloco.wagering.commands :as c]))
 
@@ -18,12 +19,12 @@
 
 (defn find-open-wager
   [player wager-id]
-  (first (filter #(= (:wager-id %) wager-id) (:open-wagers player))))
+  (select-one! [:open-wagers ALL #(= (:wager-id %) wager-id)] player))
 
 (defn remove-open-wager
   [player wager-id]
   (let [wager (find-open-wager player wager-id)]
-    (update-in player [:open-wagers] #(set (remove #{%2} %1)) wager)))
+    (transform [:open-wagers] #(disj % wager) player)))
 
 
 (defn dispatch-apply-event [player event] (:event-type event))
