@@ -2,9 +2,9 @@
   (:require [ring.util.http-response :refer :all]
             [compojure.api.sweet :refer :all]
             [schema.core :as s]
-            [marzoloco.wagering.commands :as c]
+            [marzoloco.wagering.commands :as wc]
             [marzoloco.event-store :as es]
-            [marzoloco.wagering.command-handler :as ch]
+            [marzoloco.wagering.command-handler :as wch]
             [marzoloco.read.players :as rp]))
 
 (s/defschema Thingie {:id    Long
@@ -38,44 +38,44 @@
                   :tags ["Wagering context, Player commands"]
 
                   (POST* "/deposit-points" []
-                         :body [cmd c/DepositPoints]
+                         :body [cmd wc/DepositPoints]
                          :summary "Deposit points into the player's bankroll"
-                         (ok (ch/handle-command event-store cmd)))
+                         (ok (wch/handle-command event-store cmd)))
 
                   (POST* "/place-wager" []
-                         :body [cmd c/PlaceWager]
+                         :body [cmd wc/PlaceWager]
                          :summary "Place a Wager"
-                         (ok (ch/handle-command event-store cmd)))
+                         (ok (wch/handle-command event-store cmd)))
 
                   (POST* "/withdraw-wager" []
-                         :body [cmd c/WithdrawWager]
+                         :body [cmd wc/WithdrawWager]
                          :summary "Withdraw a Wager if it has not been locked"
-                         (ok (ch/handle-command event-store cmd)))
+                         (ok (wch/handle-command event-store cmd)))
 
                   (POST* "/cancel-wager" []
-                         :body [cmd c/CancelWager]
+                         :body [cmd wc/CancelWager]
                          :summary "Cancel a Wager"
-                         (ok (ch/handle-command event-store cmd)))
+                         (ok (wch/handle-command event-store cmd)))
 
                   (POST* "/lock-wager" []
-                         :body [cmd c/LockWager]
+                         :body [cmd wc/LockWager]
                          :summary "Lock down a Wager so that it cannot be withdrawn"
-                         (ok (ch/handle-command event-store cmd)))
+                         (ok (wch/handle-command event-store cmd)))
 
                   (POST* "/close-won-wager" []
-                         :body [cmd c/CloseWonWager]
+                         :body [cmd wc/CloseWonWager]
                          :summary "Close out a Wager that has been won by the Player"
-                         (ok (ch/handle-command event-store cmd)))
+                         (ok (wch/handle-command event-store cmd)))
 
                   (POST* "/close-pushed-wager" []
-                         :body [cmd c/ClosePushedWager]
+                         :body [cmd wc/ClosePushedWager]
                          :summary "Close out a Wager that is a push for the Player"
-                         (ok (ch/handle-command event-store cmd)))
+                         (ok (wch/handle-command event-store cmd)))
 
                   (POST* "/close-lost-wager" []
-                         :body [cmd c/CloseLostWager]
+                         :body [cmd wc/CloseLostWager]
                          :summary "Close out a Wager that has been Lost by the Player"
-                         (ok (ch/handle-command event-store cmd))))
+                         (ok (wch/handle-command event-store cmd))))
 
         (context* "/api" []
                   :tags ["z sample - thingie"]
