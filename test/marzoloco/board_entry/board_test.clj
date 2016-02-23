@@ -49,26 +49,43 @@
         actual-board (apply-event initial-board bet-posted-event)]
     (is (= expected-board actual-board))))
 
-(deftest apply-SideWon-event
+(deftest apply-SideWonLostPushed-event
   (let [board-id (uuid) game-id (uuid) bet-id (uuid) other-bet-id (uuid)
         initial-board (map->Board {:board-id board-id
                                    :games    {game-id {:game-id game-id
                                                        :bets    {;; I'm wondering when this becomes a bad idea.
                                                                  ;; this event application shouldn't care about
                                                                  ;; the contents of the bet, so is it ok, or perhaps
-                                                                 ;; better to include the content
+                                                                 ;; better to include the content?
                                                                  other-bet-id {:bet-id other-bet-id}
                                                                  bet-id       {:bet-id bet-id}}}}})
-        side-won-event {:event-type   :side-won
-                        :board-id     board-id
-                        :game-id      game-id
-                        :bet-id       bet-id
-                        :winning-side :favorite}
         expected-board (map->Board {:board-id board-id
                                     :games    {game-id {:game-id game-id
-                                                        :bets    {other-bet-id {:bet-id other-bet-id}}}}})
-        actual-board (apply-event initial-board side-won-event)]
-    (is (= expected-board actual-board))))
+                                                        :bets    {other-bet-id {:bet-id other-bet-id}}}}})]
+    (testing "SideWon event removes bet from game"
+      (let [event {:event-type :side-won
+                   :board-id   board-id
+                   :game-id    game-id
+                   :bet-id     bet-id
+                   :side       :favorite}
+            actual-board (apply-event initial-board event)]
+        (is (= expected-board actual-board))))
+    (testing "SideLost event removes bet from game"
+      (let [event {:event-type :side-lost
+                   :board-id   board-id
+                   :game-id    game-id
+                   :bet-id     bet-id
+                   :side       :favorite}
+            actual-board (apply-event initial-board event)]
+        (is (= expected-board actual-board))))
+    (testing "SidePushed event removes bet from game"
+      (let [event {:event-type :side-pushed
+                   :board-id   board-id
+                   :game-id    game-id
+                   :bet-id     bet-id
+                   :side       :favorite}
+            actual-board (apply-event initial-board event)]
+        (is (= expected-board actual-board))))))
 
 
 (deftest execute-PostGame-command
@@ -166,16 +183,16 @@
                             :game-id       game-id
                             :team-a-points team-a-points
                             :team-b-points team-b-points}
-        expected-events [{:event-type   :side-won
-                          :board-id     board-id
-                          :game-id      game-id
-                          :bet-id       bet-id
-                          :winning-side :favorite}
-                         {:event-type  :side-lost
-                          :board-id    board-id
-                          :game-id     game-id
-                          :bet-id      bet-id
-                          :losing-side :underdog}]
+        expected-events [{:event-type :side-won
+                          :board-id   board-id
+                          :game-id    game-id
+                          :bet-id     bet-id
+                          :side       :favorite}
+                         {:event-type :side-lost
+                          :board-id   board-id
+                          :game-id    game-id
+                          :bet-id     bet-id
+                          :side       :underdog}]
         actual-events (execute-command board declareWinners-cmd)]
     (is (= expected-events actual-events))
     (testing "multiple bets of different kinds")))

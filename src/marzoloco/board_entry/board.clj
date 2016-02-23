@@ -62,11 +62,24 @@
     (->> board
          (transform [:games (keypath game-id) :bets] #(assoc % bet-id bet)))))
 
+(defn remove-bet [game-id bet-id board]
+  (->> board
+       (transform [:games (keypath game-id) :bets] #(dissoc % bet-id))))
+
 (s/defmethod apply-event :side-won
   [board :- Board
    {:keys [game-id bet-id] :as event} :- e/SideWon]
-  (->> board
-       (transform [:games (keypath game-id) :bets] #(dissoc % bet-id))))
+  (remove-bet game-id bet-id board))
+
+(s/defmethod apply-event :side-lost
+  [board :- Board
+   {:keys [game-id bet-id] :as event} :- e/SideLost]
+  (remove-bet game-id bet-id board))
+
+(s/defmethod apply-event :side-pushed
+  [board :- Board
+   {:keys [game-id bet-id] :as event} :- e/SidePushed]
+  (remove-bet game-id bet-id board))
 
 
 (defn dispatch-execute-command [board command] (:command-type command))
@@ -121,21 +134,21 @@
    {:keys [game-id team-a-points team-b-points] :as command} :- c/DeclareWinners]
   (let [[bet-id bet] (select-one [:games (keypath game-id) :bets FIRST] board)
         side-results (determine-side-results bet team-a-points team-b-points)
-        side-won-events (map #(identity {:event-type   :side-won
-                                         :board-id     board-id
-                                         :game-id      game-id
-                                         :bet-id       bet-id
-                                         :winning-side %})
+        side-won-events (map #(identity {:event-type :side-won
+                                         :board-id   board-id
+                                         :game-id    game-id
+                                         :bet-id     bet-id
+                                         :side       %})
                              (:winning-sides side-results))
-        side-lost-events (map #(identity {:event-type  :side-lost
-                                          :board-id    board-id
-                                          :game-id     game-id
-                                          :bet-id      bet-id
-                                          :losing-side %})
+        side-lost-events (map #(identity {:event-type :side-lost
+                                          :board-id   board-id
+                                          :game-id    game-id
+                                          :bet-id     bet-id
+                                          :side       %})
                               (:losing-sides side-results))
-        side-pushed-events (map #({:event-type  :side-pushed
-                                   :game-id     game-id
-                                   :bet-id      bet-id
-                                   :pushed-side %})
+        side-pushed-events (map #({:event-type :side-pushed
+                                   :game-id    game-id
+                                   :bet-id     bet-id
+                                   :side       %})
                                 (:pushed-sides side-results))]
-    (concat side-won-events side-lost-events)))
+    (concat side-won-events side-lost-events side-pushed-events)))

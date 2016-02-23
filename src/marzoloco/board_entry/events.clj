@@ -28,14 +28,20 @@
 
 (def Side (s/enum :favorite :underdog :over :under))
 
-(s/defschema SideWon {:event-type   (s/eq :side-won)
-                      :board-id     s/Uuid
-                      :game-id      s/Uuid
-                      :bet-id       s/Uuid
-                      :winning-side Side})
+(s/defschema SideWon {:event-type (s/eq :side-won)
+                      :board-id   s/Uuid
+                      :game-id    s/Uuid
+                      :bet-id     s/Uuid
+                      :side       Side})
 
-(s/defschema SideLost {:event-type  (s/eq :side-lost)
-                       :board-id    s/Uuid
-                       :game-id     s/Uuid
-                       :bet-id      s/Uuid
-                       :losing-side Side})
+(s/defschema SideLost {:event-type (s/eq :side-lost)
+                       :board-id   s/Uuid
+                       :game-id    s/Uuid
+                       :bet-id     s/Uuid
+                       :side       Side})
+
+(s/defschema SidePushed {:event-type (s/eq :side-pushed)
+                         :board-id   s/Uuid
+                         :game-id    s/Uuid
+                         :bet-id     s/Uuid
+                         :side       Side})
