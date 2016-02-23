@@ -49,6 +49,27 @@
         actual-board (apply-event initial-board bet-posted-event)]
     (is (= expected-board actual-board))))
 
+(deftest apply-SideWon-event
+  (let [board-id (uuid) game-id (uuid) bet-id (uuid) other-bet-id (uuid)
+        initial-board (map->Board {:board-id board-id
+                                   :games    {game-id {:game-id game-id
+                                                       :bets    {;; I'm wondering when this becomes a bad idea.
+                                                                 ;; this event application shouldn't care about
+                                                                 ;; the contents of the bet, so is it ok, or perhaps
+                                                                 ;; better to include the content
+                                                                 other-bet-id {:bet-id other-bet-id}
+                                                                 bet-id       {:bet-id bet-id}}}}})
+        side-won-event {:event-type   :side-won
+                        :board-id     board-id
+                        :game-id      game-id
+                        :bet-id       bet-id
+                        :winning-side :favorite}
+        expected-board (map->Board {:board-id board-id
+                                    :games    {game-id {:game-id game-id
+                                                        :bets    {other-bet-id {:bet-id other-bet-id}}}}})
+        actual-board (apply-event initial-board side-won-event)]
+    (is (= expected-board actual-board))))
+
 
 (deftest execute-PostGame-command
   (let [board-id (uuid) game-id (uuid)

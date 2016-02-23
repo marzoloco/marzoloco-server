@@ -62,6 +62,12 @@
     (->> board
          (transform [:games (keypath game-id) :bets] #(assoc % bet-id bet)))))
 
+(s/defmethod apply-event :side-won
+  [board :- Board
+   {:keys [game-id bet-id] :as event} :- e/SideWon]
+  (->> board
+       (transform [:games (keypath game-id) :bets] #(dissoc % bet-id))))
+
 
 (defn dispatch-execute-command [board command] (:command-type command))
 

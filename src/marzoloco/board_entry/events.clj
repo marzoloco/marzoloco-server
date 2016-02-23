@@ -8,6 +8,7 @@
                          :team-b-name s/Str})
 
 (s/defschema SpreadBet {:bet-id   s/Uuid
+
                         :bet-type (s/eq :spread-bet)
                         :favorite (s/enum :team-a :team-b)
                         :spread   s/Num})
