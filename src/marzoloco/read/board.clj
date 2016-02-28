@@ -31,6 +31,22 @@
                 (assoc :bet-type :spread-bet))]
     (transform [:games (keypath game-id) :bets] #(assoc % bet-id bet) board)))
 
+(s/defmethod apply-event :total-bet-posted
+  [board
+   {:keys [game-id bet-id] :as event} :- be/TotalBetPosted]
+  (let [bet (-> event
+                (select-keys [:bet-id :over-under])
+                (assoc :bet-type :total-bet))]
+    (transform [:games (keypath game-id) :bets] #(assoc % bet-id bet) board)))
+
+(s/defmethod apply-event :prop-bet-posted
+  [board
+   {:keys [game-id bet-id] :as event} :- be/PropBetPosted]
+  (let [bet (-> event
+                (select-keys [:bet-id :over-under])
+                (assoc :bet-type :prop-bet))]
+    (transform [:games (keypath game-id) :bets] #(assoc % bet-id bet) board)))
+
 (defn make-board
   [events]
   (reduce apply-event {} events))
