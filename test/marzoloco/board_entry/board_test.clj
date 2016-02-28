@@ -204,7 +204,12 @@
                              :game-id       game-id
                              :team-a-points team-a-points
                              :team-b-points team-b-points}
-        expected-events [{:event-type :side-won
+        expected-events [{:event-type    :game-results-posted
+                          :board-id      board-id
+                          :game-id       game-id
+                          :team-a-points team-a-points
+                          :team-b-points team-b-points}
+                         {:event-type :side-won
                           :board-id   board-id
                           :game-id    game-id
                           :bet-id     bet-id

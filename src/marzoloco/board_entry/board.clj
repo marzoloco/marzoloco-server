@@ -158,7 +158,12 @@
 (s/defmethod execute-command :post-game-results
   [{:keys [board-id] :as board} :- Board
    {:keys [game-id team-a-points team-b-points] :as command} :- c/PostGameResults]
-  (let [[bet-id bet] (select-one [:games (keypath game-id) :bets FIRST] board)
+  (let [gameResultsPosted-event {:event-type    :game-results-posted
+                                 :board-id      board-id
+                                 :game-id       game-id
+                                 :team-a-points team-a-points
+                                 :team-b-points team-b-points}
+        [bet-id bet] (select-one [:games (keypath game-id) :bets FIRST] board)
         side-results (determine-side-results bet team-a-points team-b-points)
         side-won-events (map #(identity {:event-type :side-won
                                          :board-id   board-id
@@ -177,4 +182,4 @@
                                    :bet-id     bet-id
                                    :side       %})
                                 (:pushed-sides side-results))]
-    (concat side-won-events side-lost-events side-pushed-events)))
+    (cons gameResultsPosted-event (concat side-won-events side-lost-events side-pushed-events))))
