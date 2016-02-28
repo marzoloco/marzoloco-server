@@ -24,7 +24,6 @@
                             :board-id   s/Uuid
                             :game-id    s/Uuid
                             :bet-id     s/Uuid
-                            :bet-type   (s/eq :prop-bet)
                             :over-under s/Num})
 
 (def Side (s/enum :favorite :underdog :over :under))

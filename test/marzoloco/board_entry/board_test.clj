@@ -25,28 +25,59 @@
         actual-board (apply-event initial-board game-posted-event)]
     (is (= expected-board actual-board))))
 
-(deftest apply-SpreadBetPosted-event
+(deftest apply-SpreadTotalPropBetPosted-event
   (let [board-id (uuid) game-id (uuid) bet-id (uuid)
-        favorite :team-a
-        spread 13
         initial-board (map->Board {:board-id board-id
                                    :games    {game-id {:game-id game-id
-                                                       :bets    {}}}})
-        spread-bet-posted {:event-type :spread-bet-posted
-                           :board-id   board-id
-                           :game-id    game-id
-                           :bet-id     bet-id
-                           :favorite   favorite
-                           :spread     spread}
-        expected-bet (map->SpreadBet {:bet-id   bet-id
-                                      :bet-type :spread-bet
-                                      :favorite favorite
-                                      :spread   spread})
-        expected-board (map->Board {:board-id board-id
-                                    :games    {game-id {:game-id game-id
-                                                        :bets    {bet-id expected-bet}}}})
-        actual-board (apply-event initial-board spread-bet-posted)]
-    (is (= expected-board actual-board))))
+                                                       :bets    {}}}})]
+    (testing "SpreadBetPosted event adds SpreadBet to Game"
+      (let [favorite :team-a
+            spread 13.5
+            spread-bet-posted {:event-type :spread-bet-posted
+                               :board-id   board-id
+                               :game-id    game-id
+                               :bet-id     bet-id
+                               :favorite   favorite
+                               :spread     spread}
+            expected-bet (map->SpreadBet {:bet-id   bet-id
+                                          :bet-type :spread-bet
+                                          :favorite favorite
+                                          :spread   spread})
+            expected-board (map->Board {:board-id board-id
+                                        :games    {game-id {:game-id game-id
+                                                            :bets    {bet-id expected-bet}}}})
+            actual-board (apply-event initial-board spread-bet-posted)]
+        (is (= expected-board actual-board))))
+    (testing "TotalBetPosted event adds TotalBet to Game"
+      (let [over-under 5.5
+            total-bet-posted {:event-type :total-bet-posted
+                              :board-id   board-id
+                              :game-id    game-id
+                              :bet-id     bet-id
+                              :over-under over-under}
+            expected-bet (map->TotalBet {:bet-id     bet-id
+                                         :bet-type   :total-bet
+                                         :over-under over-under})
+            expected-board (map->Board {:board-id board-id
+                                        :games    {game-id {:game-id game-id
+                                                            :bets    {bet-id expected-bet}}}})
+            actual-board (apply-event initial-board total-bet-posted)]
+        (is (= expected-board actual-board))))
+    (testing "PropBetPosted event adds PropBet to Game"
+      (let [over-under 5.5
+            prop-bet-posted {:event-type :prop-bet-posted
+                             :board-id   board-id
+                             :game-id    game-id
+                             :bet-id     bet-id
+                             :over-under over-under}
+            expected-bet (map->PropBet {:bet-id     bet-id
+                                        :bet-type   :prop-bet
+                                        :over-under over-under})
+            expected-board (map->Board {:board-id board-id
+                                        :games    {game-id {:game-id game-id
+                                                            :bets    {bet-id expected-bet}}}})
+            actual-board (apply-event initial-board prop-bet-posted)]
+        (is (= expected-board actual-board))))))
 
 (deftest apply-SideWonLostPushed-event
   (let [board-id (uuid) game-id (uuid) bet-id (uuid) other-bet-id (uuid)
