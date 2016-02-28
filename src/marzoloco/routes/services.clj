@@ -2,10 +2,12 @@
   (:require [ring.util.http-response :refer :all]
             [compojure.api.sweet :refer :all]
             [schema.core :as s]
-            [marzoloco.wagering.commands :as wc]
             [marzoloco.event-store :as es]
+            [marzoloco.read.players :as rp]
+            [marzoloco.wagering.commands :as wc]
             [marzoloco.wagering.command-handler :as wch]
-            [marzoloco.read.players :as rp]))
+            [marzoloco.board-entry.commands :as bc]
+            [marzoloco.board-entry.command-handler :as bch]))
 
 (s/defschema Thingie {:id    Long
                       :hot   Boolean
@@ -21,6 +23,38 @@
         ;JSON docs available at the /swagger.json route
         (swagger-docs
           {:info {:title "marzoloco-server API"}})
+
+        (context* "/board" []
+                  :tags ["Board read model"]
+                  )
+
+        (context* "/board-entry/board" []
+                  :tags ["Board Entry context, Board commands"]
+
+                  (POST* "/post-game" []
+                         :body [cmd bc/PostGame]
+                         :summary "Post a Game on the Board"
+                         (ok (bch/handle-command event-store cmd)))
+
+                  (POST* "/post-spread-bet" []
+                         :body [cmd bc/PostSpreadBet]
+                         :summary "Post a Spread Bet to a Game on the Board"
+                         (ok (bch/handle-command event-store cmd)))
+
+                  (POST* "/post-total-bet" []
+                         :body [cmd bc/PostTotalBet]
+                         :summary "Post a Total Bet to a Game on the Board"
+                         (ok (bch/handle-command event-store cmd)))
+
+                  (POST* "/post-prop-bet" []
+                         :body [cmd bc/PostPropBet]
+                         :summary "Post a Prop Bet to a Game on the Board"
+                         (ok (bch/handle-command event-store cmd)))
+
+                  (POST* "/declare-winners" []
+                         :body [cmd bc/DeclareWinners]
+                         :summary "Resolve winners and losers for a Bet"
+                         (ok (bch/handle-command event-store cmd))))
 
         (context* "/players" []
                   :tags ["Players read model"]
