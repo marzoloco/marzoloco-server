@@ -26,8 +26,8 @@
                           :bet-id       s/Uuid
                           :over-under   s/Num})
 
-(s/defschema DeclareWinners {:command-type  (s/eq :declare-winners)
-                             :board-id      s/Uuid
-                             :game-id       s/Uuid
-                             :team-a-points s/Int
-                             :team-b-points s/Int})
+(s/defschema PostGameResults {:command-type  (s/eq :post-game-results)
+                              :board-id      s/Uuid
+                              :game-id       s/Uuid
+                              :team-a-points s/Int
+                              :team-b-points s/Int})

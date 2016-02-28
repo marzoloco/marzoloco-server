@@ -189,7 +189,7 @@
             actual-events (execute-command board postPropBet-cmd)]
         (is (= expected-events actual-events))))))
 
-(deftest execute-DeclareWinners-command
+(deftest execute-PostGameResults-command
   (let [board-id (uuid) game-id (uuid)
         bet-id (uuid) favorite :team-a spread 5
         team-a-points 93 team-b-points 87
@@ -199,11 +199,11 @@
                                                                  :bet-type :spread-bet
                                                                  :favorite favorite
                                                                  :spread   spread}}}}})
-        declareWinners-cmd {:command-type  :declare-winners
-                            :board-id      board-id
-                            :game-id       game-id
-                            :team-a-points team-a-points
-                            :team-b-points team-b-points}
+        postGameResults-cmd {:command-type  :post-game-results
+                             :board-id      board-id
+                             :game-id       game-id
+                             :team-a-points team-a-points
+                             :team-b-points team-b-points}
         expected-events [{:event-type :side-won
                           :board-id   board-id
                           :game-id    game-id
@@ -214,6 +214,6 @@
                           :game-id    game-id
                           :bet-id     bet-id
                           :side       :underdog}]
-        actual-events (execute-command board declareWinners-cmd)]
+        actual-events (execute-command board postGameResults-cmd)]
     (is (= expected-events actual-events))
     (testing "multiple bets of different kinds")))

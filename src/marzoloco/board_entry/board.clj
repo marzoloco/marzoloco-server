@@ -155,9 +155,9 @@
                                             :losing-sides  [:favorite]
                                             :pushed-sides  []}))))
 
-(s/defmethod execute-command :declare-winners
+(s/defmethod execute-command :post-game-results
   [{:keys [board-id] :as board} :- Board
-   {:keys [game-id team-a-points team-b-points] :as command} :- c/DeclareWinners]
+   {:keys [game-id team-a-points team-b-points] :as command} :- c/PostGameResults]
   (let [[bet-id bet] (select-one [:games (keypath game-id) :bets FIRST] board)
         side-results (determine-side-results bet team-a-points team-b-points)
         side-won-events (map #(identity {:event-type :side-won
