@@ -7,23 +7,24 @@
                        :team-a-name  s/Str
                        :team-b-name  s/Str})
 
-(s/defschema SpreadBet {:bet-id   s/Uuid
-                        :bet-type (s/eq :spread-bet)
-                        :favorite (s/enum :team-a :team-b)
-                        :spread   s/Num})
+(s/defschema PostSpreadBet {:command-type (s/eq :post-spread-bet)
+                            :board-id     s/Uuid
+                            :game-id      s/Uuid
+                            :bet-id       s/Uuid
+                            :favorite     (s/enum :team-a :team-b)
+                            :spread       s/Num})
 
-(s/defschema TotalBet {:bet-id     s/Uuid
-                       :bet-type   (s/eq :total-bet)
-                       :over-under s/Num})
+(s/defschema PostTotalBet {:command-type (s/eq :post-total-bet)
+                           :board-id     s/Uuid
+                           :game-id      s/Uuid
+                           :bet-id       s/Uuid
+                           :over-under   s/Num})
 
-(s/defschema PropBet {:bet-id     s/Uuid
-                      :bet-type   (s/eq :prop-bet)
-                      :over-under s/Num})
-
-(s/defschema PostBet {:command-type (s/eq :post-bet)
-                      :board-id     s/Uuid
-                      :game-id      s/Uuid
-                      :bet          (s/either SpreadBet TotalBet PropBet)})
+(s/defschema PostPropBet {:command-type (s/eq :post-prop-bet)
+                          :board-id     s/Uuid
+                          :game-id      s/Uuid
+                          :bet-id       s/Uuid
+                          :over-under   s/Num})
 
 (s/defschema DeclareWinners {:command-type  (s/eq :declare-winners)
                              :board-id      s/Uuid

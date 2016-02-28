@@ -46,19 +46,32 @@
     (-> board
         (update-in [:games] assoc game-id game))))
 
-(s/defmethod apply-event :bet-posted
+(s/defmethod apply-event :spread-bet-posted
   [board :- Board
-   {:keys [game-id bet] :as event} :- e/BetPosted]
+   {:keys [game-id bet-id favorite spread] :as event} :- e/SpreadBetPosted]
   ;; TODO return BetPostedForUnknownGame event
-  (let [bet-id (:bet-id bet)
-        bet-type (:bet-type bet)
-        bet (merge (case bet-type
-                     :spread-bet (map->SpreadBet {:favorite (:favorite bet)
-                                                  :spread   (:spread bet)})
-                     :total-bet (map->TotalBet {:over-under (:over-under bet)})
-                     :prop-bet (map->PropBet {:over-under (:over-under bet)}))
-                   {:bet-id   bet-id
-                    :bet-type bet-type})]
+  (let [bet (map->SpreadBet {:bet-id   bet-id
+                             :bet-type :spread-bet
+                             :favorite favorite
+                             :spread   spread})]
+    (->> board
+         (transform [:games (keypath game-id) :bets] #(assoc % bet-id bet)))))
+
+(s/defmethod apply-event :total-bet-posted
+  [board :- Board
+   {:keys [game-id bet-id over-under] :as event} :- e/TotalBetPosted]
+  (let [bet (map->TotalBet {:bet-id     bet-id
+                            :bet-type   :total-bet
+                            :over-under over-under})]
+    (->> board
+         (transform [:games (keypath game-id) :bets] #(assoc % bet-id bet)))))
+
+(s/defmethod apply-event :prop-bet-posted
+  [board :- Board
+   {:keys [game-id bet-id over-under] :as event} :- e/PropBetPosted]
+  (let [bet (map->PropBet {:bet-id     bet-id
+                           :bet-type   :prop-bet
+                           :over-under over-under})]
     (->> board
          (transform [:games (keypath game-id) :bets] #(assoc % bet-id bet)))))
 
@@ -95,20 +108,33 @@
     :team-a-name team-a-name
     :team-b-name team-b-name}])
 
-(s/defmethod execute-command :post-bet
+(s/defmethod execute-command :post-spread-bet
   [{:keys [board-id] :as board} :- Board
-   {:keys [game-id bet] :as command} :- c/PostBet]
-  (let [{:keys [bet-id bet-type]} bet]
-    [{:event-type :bet-posted
-      :board-id   board-id
-      :game-id    game-id
-      :bet        (merge {:bet-id   bet-id
-                          :bet-type bet-type}
-                         (case bet-type
-                           :spread-bet {:favorite (:favorite bet)
-                                        :spread   (:spread bet)}
-                           :total-bet {:over-under (:over-under bet)}
-                           :prop-bet {:over-under (:over-under bet)}))}]))
+   {:keys [game-id bet-id favorite spread] :as command} :- c/PostSpreadBet]
+  [{:event-type :spread-bet-posted
+    :board-id   board-id
+    :game-id    game-id
+    :bet-id     bet-id
+    :favorite   favorite
+    :spread     spread}])
+
+(s/defmethod execute-command :post-total-bet
+  [{:keys [board-id] :as board} :- Board
+   {:keys [game-id bet-id over-under] :as command} :- c/PostTotalBet]
+  [{:event-type :total-bet-posted
+    :board-id   board-id
+    :game-id    game-id
+    :bet-id     bet-id
+    :over-under over-under}])
+
+(s/defmethod execute-command :post-prop-bet
+  [{:keys [board-id] :as board} :- Board
+   {:keys [game-id bet-id over-under] :as command} :- c/PostPropBet]
+  [{:event-type :prop-bet-posted
+    :board-id   board-id
+    :game-id    game-id
+    :bet-id     bet-id
+    :over-under over-under}])
 
 (defn determine-side-results
   [{:keys [bet-type] :as bet} team-a-points team-b-points]
