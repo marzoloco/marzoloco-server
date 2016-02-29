@@ -66,6 +66,18 @@
    {:keys [game-id bet-id side] :- be/SideLost}]
   board)
 
+
+(defn demap-bets
+  [game]
+  (transform [:bets] #(-> % vals vec) game))
+
+(defn demap-games-bets
+  [board]
+  (->> board
+       (transform [:games ALL LAST] demap-bets)
+       (transform [:games] #(-> % vals vec))))
+
+
 (defn make-board
   [events]
   (reduce apply-event {} events))
@@ -74,7 +86,8 @@
   [event-store]
   (->> event-store
        es/get-all-events
-       make-board))
+       make-board
+       demap-games-bets))
 
 (defn get-game
   [event-store game-id]
@@ -82,4 +95,6 @@
        es/get-all-events
        (filter #(= (:game-id %) game-id))
        make-board
-       #(get % game-id)))
+       :games
+       (#(get % game-id))
+       demap-bets))
