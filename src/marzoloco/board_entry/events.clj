@@ -26,6 +26,12 @@
                             :bet-id     s/Uuid
                             :over-under s/Num})
 
+(s/defschema GameResultsPosted {:event-type     (s/eq :game-results-posted)
+                                :board-id       s/Uuid
+                                :game-id        s/Uuid
+                                :team-a-points  s/Int
+                                :team-b-pointes s/Int})
+
 (def Side (s/enum :favorite :underdog :over :under))
 
 (s/defschema SideWon {:event-type (s/eq :side-won)
