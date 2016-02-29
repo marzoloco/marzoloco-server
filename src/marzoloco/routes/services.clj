@@ -6,6 +6,7 @@
             [marzoloco.read.players :as rp]
             [marzoloco.wagering.commands :as wc]
             [marzoloco.wagering.command-handler :as wch]
+            [marzoloco.read.board :as rb]
             [marzoloco.board-entry.commands :as bc]
             [marzoloco.board-entry.command-handler :as bch]))
 
@@ -26,7 +27,15 @@
 
         (context* "/board" []
                   :tags ["Board read model"]
-                  )
+
+                  (GET* "/" []
+                        :summary "Get the Board"
+                        (ok (rb/get-board event-store)))
+
+                  (GET* "/game/:game-id" []
+                        :summary "Get Game by id"
+                        :path-params [game-id :- s/Uuid]
+                        (ok (rb/get-game event-store game-id))))
 
         (context* "/board-entry/board" []
                   :tags ["Board Entry context, Board commands"]
