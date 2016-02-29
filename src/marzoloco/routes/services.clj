@@ -51,9 +51,9 @@
                          :summary "Post a Prop Bet to a Game on the Board"
                          (ok (bch/handle-command event-store cmd)))
 
-                  (POST* "/declare-winners" []
-                         :body [cmd bc/DeclareWinners]
-                         :summary "Resolve winners and losers for a Bet"
+                  (POST* "/post-game-results" []
+                         :body [cmd bc/PostGameResults]
+                         :summary "Post the completed score of the game to resolve the Bets winners and losers"
                          (ok (bch/handle-command event-store cmd))))
 
         (context* "/players" []
