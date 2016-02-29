@@ -20,7 +20,8 @@
   [board
    {:keys [board-id game-id] :as event} :- be/GamePosted]
   (let [game (-> event
-                 (select-keys [:game-id :team-a-name :team-b-name]))]
+                 (select-keys [:game-id :team-a-name :team-b-name])
+                 (assoc :status :posted))]
     (transform [:games] #(assoc % game-id game) board)))
 
 (s/defmethod apply-event :spread-bet-posted
@@ -46,6 +47,24 @@
                 (select-keys [:bet-id :over-under])
                 (assoc :bet-type :prop-bet))]
     (transform [:games (keypath game-id) :bets] #(assoc % bet-id bet) board)))
+
+(s/defmethod apply-event :game-results-posted
+  [board
+   {:keys [game-id team-a-points team-b-points] :- be/GameResultsPosted}]
+  (->> board
+       (transform [:games (keypath game-id)] #(assoc % :team-a-points team-a-points
+                                                       :team-b-points team-b-points
+                                                       :status :completed))))
+
+(s/defmethod apply-event :side-won
+  [board
+   {:keys [game-id bet-id side] :- be/SideWon}]
+  board)
+
+(s/defmethod apply-event :side-lost
+  [board
+   {:keys [game-id bet-id side] :- be/SideLost}]
+  board)
 
 (defn make-board
   [events]
