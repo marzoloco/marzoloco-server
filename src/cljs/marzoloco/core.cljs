@@ -11,8 +11,8 @@
 
 (defn nav-link [uri title page collapsed?]
   [:ul.nav.navbar-nav>a.navbar-brand
-   {:class (when (= page (session/get :page)) "active")
-    :href uri
+   {:class    (when (= page (session/get :page)) "active")
+    :href     uri
     :on-click #(reset! collapsed? true)}
    title])
 

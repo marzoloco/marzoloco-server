@@ -4,6 +4,11 @@
     <option name="PER_PROJECT_SETTINGS">
       <value>
         <ClojureCodeStyleSettings>{
+  :compojure.api.sweet/GET :only-indent
+  :compojure.api.sweet/POST :only-indent
+  :compojure.api.sweet/PUT :only-indent
+  :compojure.api.sweet/context :only-indent
+  :compojure.api.sweet/defapi :only-indent
   :schema.core/defmethod :only-indent
 }</ClojureCodeStyleSettings>
         <XML>
