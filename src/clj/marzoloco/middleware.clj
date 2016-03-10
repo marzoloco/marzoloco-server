@@ -1,14 +1,14 @@
 (ns marzoloco.middleware
   (:require [marzoloco.layout :refer [*app-context* error-page]]
             [clojure.tools.logging :as log]
-            [config.core :refer [env]]
+            [marzoloco.env :refer [defaults]]
+            [marzoloco.config :refer [env]]
             [ring.middleware.flash :refer [wrap-flash]]
             [immutant.web.middleware :refer [wrap-session]]
             [ring.middleware.webjars :refer [wrap-webjars]]
             [ring.middleware.defaults :refer [site-defaults wrap-defaults]]
             [ring.middleware.anti-forgery :refer [wrap-anti-forgery]]
-            [ring.middleware.format :refer [wrap-restful-format]]
-            [marzoloco.config :refer [defaults]])
+            [ring.middleware.format :refer [wrap-restful-format]])
   (:import [javax.servlet ServletContext]))
 
 (defn wrap-context [handler]
@@ -32,8 +32,8 @@
       (handler req)
       (catch Throwable t
         (log/error t)
-        (error-page {:status  500
-                     :title   "Something very bad has happened!"
+        (error-page {:status 500
+                     :title "Something very bad has happened!"
                      :message "We've dispatched a team of highly trained gnomes to take care of the problem."})))))
 
 (defn wrap-csrf [handler]
@@ -42,7 +42,7 @@
     {:error-response
      (error-page
        {:status 403
-        :title  "Invalid anti-forgery token"})}))
+        :title "Invalid anti-forgery token"})}))
 
 (defn wrap-formats [handler]
   (let [wrapped (wrap-restful-format

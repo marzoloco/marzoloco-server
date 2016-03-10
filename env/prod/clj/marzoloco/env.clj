@@ -1,4 +1,4 @@
-(ns marzoloco.config
+(ns marzoloco.env
   (:require [clojure.tools.logging :as log]))
 
 (def defaults

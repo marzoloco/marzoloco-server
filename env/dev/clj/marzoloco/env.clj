@@ -1,4 +1,4 @@
-(ns marzoloco.config
+(ns marzoloco.env
   (:require [selmer.parser :as parser]
             [clojure.tools.logging :as log]
             [marzoloco.dev-middleware :refer [wrap-dev]]))

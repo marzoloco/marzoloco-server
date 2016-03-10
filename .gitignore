@@ -18,3 +18,5 @@ profiles.clj
 /.idea/*
 !/.idea/codeStyleSettings.xml
 
+.nrepl-port
+/log
